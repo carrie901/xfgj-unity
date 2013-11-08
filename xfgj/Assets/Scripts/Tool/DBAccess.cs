@@ -46,129 +46,129 @@ public class DBAccess{
     }
 
     public SqliteDataReader ExecuteQuery (string sqlQuery) {
-		if (sqlQuery == null) {
-			throw new SqliteException("");
-		}
-		Debug.Log(sqlQuery);
+        if (sqlQuery == null) {
+            throw new SqliteException("");
+        }
+        Debug.Log(sqlQuery);
         dbCommand = dbConnection.CreateCommand();
         dbCommand.CommandText = sqlQuery;
         reader = dbCommand.ExecuteReader();
         return reader;
     }
-	
-	public SqliteDataReader CreateTable (string sql) {
+    
+    public SqliteDataReader CreateTable (string sql) {
         if (sql == null) {
             throw new SqliteException("param sql is null");
         }
         return ExecuteQuery(sql);
     }
-	
-	public SqliteDataReader Insert (string tableName, string[] cols, object[] values) {
+    
+    public SqliteDataReader Insert (string tableName, string[] cols, object[] values) {
         if (tableName == null || cols == null || values == null || cols.Length != values.Length) {
             throw new SqliteException("param error");
         }
-		StringBuilder sb = new StringBuilder();
-		sb.Append("INSERT INTO ");
-		sb.Append(tableName);
-		sb.Append("(");
+        StringBuilder sb = new StringBuilder();
+        sb.Append("INSERT INTO ");
+        sb.Append(tableName);
+        sb.Append("(");
         for (int i = 0; i < cols.Length; ++i) {
-			if (i > 0) {
-				sb.Append(", ");
-			}
-			sb.Append(cols[i]);
+            if (i > 0) {
+                sb.Append(", ");
+            }
+            sb.Append(cols[i]);
         }
-		sb.Append(") VALUES (");
+        sb.Append(") VALUES (");
         for (int i = 0; i < values.Length; ++i) {
-			if (i > 0) {
-				sb.Append(", ");
-			}
-			if (values[i] is String) {
-				sb.Append("'");
-				sb.Append(values[i]);
-				sb.Append("'");
-			}
-			else {
-				sb.Append(values[i]);
-			}
+            if (i > 0) {
+                sb.Append(", ");
+            }
+            if (values[i] is String) {
+                sb.Append("'");
+                sb.Append(values[i]);
+                sb.Append("'");
+            }
+            else {
+                sb.Append(values[i]);
+            }
         }
-	    sb.Append(")");
+        sb.Append(")");
         return ExecuteQuery(sb.ToString());
     }
 
     public SqliteDataReader Update (string tableName, string[] cols, object[] values, string whereArgs) {
-		if (tableName == null || cols == null || values == null || cols.Length != values.Length) {
-			throw new SqliteException("param error");
-		}
-		StringBuilder sb = new StringBuilder();
-		sb.Append("UPDATE ");
-		sb.Append(tableName);
-		sb.Append(" SET ");
-        for (int i = 0; i < cols.Length; ++i) {
-			if (i > 0) {
-				sb.Append(", ");
-			}
-			sb.Append(cols[i]);
-			sb.Append("=");
-			if (values[i] is String) {
-				sb.Append("'");
-				sb.Append(values[i]);
-				sb.Append("'");
-			}
-			else {
-				sb.Append(values[i]);
-			}
+        if (tableName == null || cols == null || values == null || cols.Length != values.Length) {
+            throw new SqliteException("param error");
         }
-		if (whereArgs != null) {
-			sb.Append(" ");
-			sb.Append(whereArgs);
-		}
+        StringBuilder sb = new StringBuilder();
+        sb.Append("UPDATE ");
+        sb.Append(tableName);
+        sb.Append(" SET ");
+        for (int i = 0; i < cols.Length; ++i) {
+            if (i > 0) {
+                sb.Append(", ");
+            }
+            sb.Append(cols[i]);
+            sb.Append("=");
+            if (values[i] is String) {
+                sb.Append("'");
+                sb.Append(values[i]);
+                sb.Append("'");
+            }
+            else {
+                sb.Append(values[i]);
+            }
+        }
+        if (whereArgs != null) {
+            sb.Append(" ");
+            sb.Append(whereArgs);
+        }
         return ExecuteQuery(sb.ToString());
     }
 
     public SqliteDataReader Delete(string tableName, string whereArgs) {
-		if (tableName == null) {
-			throw new SqliteException("param error");
-		}
-		StringBuilder sb = new StringBuilder();
-		sb.Append("DELETE FROM ");
-		sb.Append(tableName);
-		if (whereArgs != null) {
-			sb.Append(" ");
-			sb.Append(whereArgs);
-		}
+        if (tableName == null) {
+            throw new SqliteException("param error");
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.Append("DELETE FROM ");
+        sb.Append(tableName);
+        if (whereArgs != null) {
+            sb.Append(" ");
+            sb.Append(whereArgs);
+        }
         return ExecuteQuery(sb.ToString());
     }
 
     public SqliteDataReader ClearTable (string tableName) {
-		return Delete(tableName, null);
+        return Delete(tableName, null);
     }
 
     public SqliteDataReader Query (string tableName, string selectArgs, string whereArgs) {
-		return Query(tableName, selectArgs, whereArgs, null, null);
+        return Query(tableName, selectArgs, whereArgs, null, null);
     }
-	
-	public SqliteDataReader Query (string tableName, string selectArgs, string whereArgs, string orderArgs, string limitArgs) {
-		if (tableName == null || selectArgs == null) {
-			throw new SqliteException("param tableName and selectArgs can't be null");
-		}
-		StringBuilder sb = new StringBuilder();
-		sb.Append("SELECT ");
-		sb.Append(selectArgs);
+    
+    public SqliteDataReader Query (string tableName, string selectArgs, string whereArgs, string orderArgs, string limitArgs) {
+        if (tableName == null || selectArgs == null) {
+            throw new SqliteException("param tableName and selectArgs can't be null");
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.Append("SELECT ");
+        sb.Append(selectArgs);
         sb.Append(" FROM ");
-		sb.Append(tableName);
-		if (whereArgs != null) {
-			sb.Append(" ");
-			sb.Append(whereArgs);
-		}
-		if (orderArgs != null) {
-			sb.Append(" ");
-			sb.Append(orderArgs);
-		}
-		if (limitArgs != null) {
-			sb.Append(" ");
-			sb.Append(limitArgs);
-		}
+        sb.Append(tableName);
+        if (whereArgs != null) {
+            sb.Append(" ");
+            sb.Append(whereArgs);
+        }
+        if (orderArgs != null) {
+            sb.Append(" ");
+            sb.Append(orderArgs);
+        }
+        if (limitArgs != null) {
+            sb.Append(" ");
+            sb.Append(limitArgs);
+        }
         return ExecuteQuery(sb.ToString());
-	}
+    }
 
 }
