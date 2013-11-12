@@ -3,7 +3,7 @@ using System;
 using System.Collections;
 
 public class DBTest : UUnitTestCase {
-
+    /*
     [UUnitTest]
     public void CategoryDbTest () {
         LogicController.CreateTable();
@@ -127,5 +127,5 @@ public class DBTest : UUnitTestCase {
         LogicController.DeleteTraderate(tr);
         tr2 = LogicController.GetTraderate(1);
         UUnitAssert.Null(tr2);
-    }
+    }*/
 }

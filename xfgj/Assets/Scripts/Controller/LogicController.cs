@@ -136,7 +136,8 @@ public class LogicController {
                             StringUtil.StringToDateTime(reader.GetString(reader.GetOrdinal(Item.FIELD_LIST_TIME))),
                             StringUtil.StringToDateTime(reader.GetString(reader.GetOrdinal(Item.FIELD_DELIST_TIME))),
                             reader.GetInt32(reader.GetOrdinal(Item.FIELD_PRODUCT_ID)),
-                            reader.GetInt32(reader.GetOrdinal(Item.FIELD_SEQ)));
+                            reader.GetInt32(reader.GetOrdinal(Item.FIELD_SEQ)),
+                            StringUtil.StringToDateTime(reader.GetString(reader.GetOrdinal(Item.FIELD_MODIFIED))));
         }
         reader.Close();
         dbAccess.CloseSqlConnection();
@@ -190,7 +191,8 @@ public class LogicController {
         while (reader.Read()) {
             producer = new Producer(reader.GetInt32(reader.GetOrdinal(Producer.FIELD_PRODUCER_ID)),
                             reader.GetString(reader.GetOrdinal(Producer.FIELD_NAME)),
-                            reader.GetString(reader.GetOrdinal(Producer.FIELD_DETAILS)));
+                            reader.GetString(reader.GetOrdinal(Producer.FIELD_DETAILS)),
+                            StringUtil.StringToDateTime(reader.GetString(reader.GetOrdinal(Producer.FIELD_MODIFIED))));
         }
         reader.Close();
         dbAccess.CloseSqlConnection();
@@ -252,7 +254,8 @@ public class LogicController {
                             reader.GetInt32(reader.GetOrdinal(Product.FIELD_CID)),
                             reader.GetString(reader.GetOrdinal(Product.FIELD_SIZE)),
                             reader.GetString(reader.GetOrdinal(Product.FIELD_PIC_URL)),
-                            reader.GetString(reader.GetOrdinal(Product.FIELD_DETAILS)));
+                            reader.GetString(reader.GetOrdinal(Product.FIELD_DETAILS)),
+                            StringUtil.StringToDateTime(reader.GetString(reader.GetOrdinal(Product.FIELD_MODIFIED))));
         }
         reader.Close();
         dbAccess.CloseSqlConnection();
@@ -310,7 +313,8 @@ public class LogicController {
                             reader.GetString(reader.GetOrdinal(Scene.FIELD_NAME)),
                             reader.GetInt32(reader.GetOrdinal(Scene.FIELD_TYPE_ID)),
                             reader.GetString(reader.GetOrdinal(Scene.FIELD_PIC_URL)),
-                            reader.GetString(reader.GetOrdinal(Scene.FIELD_DETAILS)));
+                            reader.GetString(reader.GetOrdinal(Scene.FIELD_DETAILS)),
+                            StringUtil.StringToDateTime(reader.GetString(reader.GetOrdinal(Scene.FIELD_MODIFIED))));
         }
         reader.Close();
         dbAccess.CloseSqlConnection();
@@ -363,7 +367,8 @@ public class LogicController {
         SceneType sceneType = null;
         while (reader.Read()) {
             sceneType = new SceneType(reader.GetInt32(reader.GetOrdinal(SceneType.FIELD_TYPE_ID)),
-                            reader.GetString(reader.GetOrdinal(SceneType.FIELD_NAME)));
+                            reader.GetString(reader.GetOrdinal(SceneType.FIELD_NAME)),
+                            StringUtil.StringToDateTime(reader.GetString(reader.GetOrdinal(SceneType.FIELD_MODIFIED))));
         }
         reader.Close();
         dbAccess.CloseSqlConnection();

@@ -14,6 +14,7 @@ public class Item {
     public readonly DateTime delistTime;
     public readonly int productId;
     public readonly int seq;
+    public readonly DateTime modified;
     
     public static readonly string TABLE_NAME = "item";
     public static readonly string FIELD_NUMIID = "numiid";
@@ -26,6 +27,7 @@ public class Item {
     public static readonly string FIELD_DELIST_TIME = "delist_time";
     public static readonly string FIELD_PRODUCT_ID = "product_id";
     public static readonly string FIELD_SEQ = "seq";
+    public static readonly string FIELD_MODIFIED = "modified";
     public static readonly string CREATE_SQL = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "("
                                                + FIELD_NUMIID + " INTEGER PRIMARY KEY,"
                                                + FIELD_TITLE + " TEXT,"
@@ -36,10 +38,12 @@ public class Item {
                                                + FIELD_LIST_TIME + " TEXT,"
                                                + FIELD_DELIST_TIME + " TEXT,"
                                                + FIELD_PRODUCT_ID + " INTEGER,"
-                                               + FIELD_SEQ + " INTEGER)";
+                                               + FIELD_SEQ + " INTEGER,"
+                                               + FIELD_MODIFIED + " TEXT)";
     
-    public Item (long numIid, string title, string detailUrl, int cid, string picUrl, float price, 
-                 DateTime listTime, DateTime delistTime, int productId, int seq) {
+    public Item (long numIid, string title, string detailUrl, int cid, string picUrl,
+                 float price, DateTime listTime, DateTime delistTime,
+                 int productId, int seq, DateTime modified) {
         this.numIid = numIid;
         this.title = title;
         this.detailUrl = detailUrl;
@@ -50,6 +54,7 @@ public class Item {
         this.delistTime = delistTime;
         this.productId = productId;
         this.seq = seq;
+        this.modified = modified;
     }
 
 }
