@@ -8,7 +8,7 @@ public class Initialize : MonoBehaviour {
     // Use this for initialization
     void Start () {
         BindScripts();
-        LogicController.CreateTable();
+        //LogicController.CreateTable();
     }
     
     // Update is called once per frame
@@ -17,9 +17,14 @@ public class Initialize : MonoBehaviour {
     }
 
     private void BindScripts () {
-        ApiController ac = gameObject.GetComponent<ApiController>();
+        ApiCaller ac = gameObject.GetComponent<ApiCaller>();
         if (ac == null) {
-            gameObject.AddComponent("ApiController");
+            gameObject.AddComponent("ApiCaller");
+        }
+        ViewController vc = gameObject.GetComponent<ViewController>();
+        if (vc == null) {
+            Debug.Log("bind ViewController");
+            gameObject.AddComponent("ViewController");
         }
     }
 

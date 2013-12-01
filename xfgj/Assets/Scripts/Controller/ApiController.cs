@@ -2,133 +2,128 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 
-public class ApiController : MonoBehaviour {
+public class ApiController {
 
-    public delegate void ResponseHandle(string res);
+    private static GameObject obj;
 
-    public class RequestParams {
-        public Dictionary<string, string> data;
-        public ResponseHandle callback;
+    static ApiController () {
+        obj = GameObject.Find("InitObj");
     }
 
-
-    public ApiController () {
+    public static void Authorize (string appKey, ApiCaller.ResponseHandle handle) {
+        ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
+        rp.data = new Dictionary<string, string>();
+        rp.data.Add(Param.APP_KEY, appKey);
+        rp.callback = handle;
+        obj.SendMessage("Authorize", rp, SendMessageOptions.RequireReceiver);
     }
 
-    /*
-     * required: app_key
-     */
-    public void Authorize (RequestParams rp) {
-        string url = Config.SERVER_URL + "/api/authorize";
-        StartCoroutine(NetUtil.Post(url, rp.data, rp.callback));
-    }
-
-    /*
-     * required: token, scene_id
-     * optional: modified
-     */
-    public void GetScene(RequestParams rp) {
-        string url = Config.SERVER_URL + "/api/scene/" + rp.data[Param.SCENE_ID];
-        url += "?" + Param.TOKEN + "=" + rp.data[Param.TOKEN];
-        if (rp.data.ContainsKey(Param.MODIFIED)) {
-            url += "&" + Param.MODIFIED + "="  + rp.data[Param.MODIFIED];
+    public static void GetScene (string token, int sceneId, DateTime? modified,
+                                 ApiCaller.ResponseHandle handle) {
+        ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
+        rp.data = new Dictionary<string, string>();
+        rp.data.Add(Param.SCENE_ID, "" + sceneId);
+        rp.data.Add(Param.TOKEN, token);
+        if (modified != null) {
+            rp.data.Add(Param.MODIFIED, StringUtil.DateTimeToString((DateTime)modified));
         }
-        StartCoroutine(NetUtil.Get(url, rp.callback));
+        rp.callback = handle;
+        obj.SendMessage("GetScene", rp, SendMessageOptions.RequireReceiver);
     }
 
-    /*
-     * required: token
-     * optional: scene_type_id
-     */
-    public void GetScenes(RequestParams rp) {
-        string url = Config.SERVER_URL + "/api/scenes";
-        url += "?" + Param.TOKEN + "=" + rp.data[Param.TOKEN];
-        if (rp.data.ContainsKey(Param.SCENE_TYPE_ID)) {
-            url += "&" + Param.SCENE_TYPE_ID + "=" + rp.data[Param.SCENE_TYPE_ID];
+    public static void GetScenes (string token, int? sceneTypeId, ApiCaller.ResponseHandle handle) {
+        ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
+        rp.data = new Dictionary<string, string>();
+        rp.data.Add(Param.TOKEN, token);
+        if (sceneTypeId != null) {
+            rp.data.Add(Param.SCENE_TYPE_ID, "" + sceneTypeId);
         }
-        StartCoroutine(NetUtil.Get(url, rp.callback));
+        rp.callback = handle;
+        obj.SendMessage("GetScenes", rp, SendMessageOptions.RequireReceiver);
     }
 
-    /*
-     * required: token, scene_type_id
-     * optional: modified
-     */
-    public void GetSceneType(RequestParams rp) {
-        string url = Config.SERVER_URL + "/api/scene_type/" + rp.data[Param.SCENE_TYPE_ID];
-        url += "?" + Param.TOKEN + "=" + rp.data[Param.TOKEN];
-        if (rp.data.ContainsKey(Param.MODIFIED)) {
-            url += "&" + Param.MODIFIED + "=" + rp.data[Param.SCENE_TYPE_ID];
+    public static void GetSceneType (string token, int sceneTypeId, DateTime? modified,
+                                     ApiCaller.ResponseHandle handle) {
+        ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
+        rp.data = new Dictionary<string, string>();
+        rp.data.Add(Param.SCENE_TYPE_ID, "" + sceneTypeId);
+        rp.data.Add(Param.TOKEN, token);
+        if (modified != null) {
+            rp.data.Add(Param.MODIFIED, StringUtil.DateTimeToString((DateTime)modified));
         }
-        StartCoroutine(NetUtil.Get(url, rp.callback));
+        rp.callback = handle;
+        obj.SendMessage("GetSceneType", rp, SendMessageOptions.RequireReceiver);
     }
 
-    public void GetAllSceneType(RequestParams rp) {
-        string url = Config.SERVER_URL + "/api/scene_types";
-        url += "?" + Param.TOKEN + "=" + rp.data[Param.TOKEN];
-        StartCoroutine(NetUtil.Get(url, rp.callback));
+    public static void GetAllSceneType (string token, ApiCaller.ResponseHandle handle) {
+        ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
+        rp.data = new Dictionary<string, string>();
+        rp.data.Add(Param.TOKEN, token);
+        rp.callback = handle;
+        obj.SendMessage("GetAllSceneType", rp, SendMessageOptions.RequireReceiver);
     }
 
-    /*
-     * required: token, scene_id
-     */
-    public void GetProductInScene(RequestParams rp) {
-        string url = Config.SERVER_URL + "/api/product_in_scene/" + rp.data[Param.SCENE_ID];
-        url += "?" + Param.TOKEN + "=" + rp.data[Param.TOKEN];
-        StartCoroutine(NetUtil.Get(url, rp.callback));
+    public static void GetProductInScene (string token, int sceneId, ApiCaller.ResponseHandle handle) {
+        ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
+        rp.data = new Dictionary<string, string>();
+        rp.data.Add(Param.SCENE_ID, "" + sceneId);
+        rp.data.Add(Param.TOKEN, token);
+        rp.callback = handle;
+        obj.SendMessage("GetProductInScene", rp, SendMessageOptions.RequireReceiver);
     }
 
-    /*
-     * required: token, product_id
-     * optional: modified
-     */
-    public void GetProduct(RequestParams rp) {
-        string url = Config.SERVER_URL + "/api/product/" + rp.data[Param.PRODUCT_ID];
-        url += "?" + Param.TOKEN + "=" + rp.data[Param.TOKEN];
-        if (rp.data.ContainsKey(Param.MODIFIED)) {
-            url += "&" + Param.MODIFIED + "="  + rp.data[Param.MODIFIED];
+    public static void GetProduct (string token, int productId, DateTime? modified,
+                                   ApiCaller.ResponseHandle handle) {
+        ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
+        rp.data = new Dictionary<string, string>();
+        rp.data.Add(Param.PRODUCT_ID, "" + productId);
+        rp.data.Add(Param.TOKEN, token);
+        if (modified != null) {
+            rp.data.Add(Param.MODIFIED, StringUtil.DateTimeToString((DateTime)modified));
         }
-        StartCoroutine(NetUtil.Get(url, rp.callback));
+        rp.callback = handle;
+        obj.SendMessage("GetProduct", rp, SendMessageOptions.RequireReceiver);
     }
 
-    /*
-     * required: token, num_iid
-     * optional: modified
-     */
-    public void GetItem(RequestParams rp) {
-        string url = Config.SERVER_URL + "/api/item/" + rp.data[Param.NUM_IID];
-        url += "?" + Param.TOKEN + "=" + rp.data[Param.TOKEN];
-        if (rp.data.ContainsKey(Param.MODIFIED)) {
-            url += "&" + Param.MODIFIED + "="  + rp.data[Param.MODIFIED];
+    public static void GetItem (string token, int numIid, DateTime? modified,
+                                ApiCaller.ResponseHandle handle) {
+        ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
+        rp.data = new Dictionary<string, string>();
+        rp.data.Add(Param.PRODUCT_ID, "" + numIid);
+        rp.data.Add(Param.TOKEN, token);
+        if (modified != null) {
+            rp.data.Add(Param.MODIFIED, StringUtil.DateTimeToString((DateTime)modified));
         }
-        StartCoroutine(NetUtil.Get(url, rp.callback));
+        rp.callback = handle;
+        obj.SendMessage("GetItem", rp, SendMessageOptions.RequireReceiver);
     }
 
-    /*
-     * required: token, product_id
-     */
-    public void GetItemWithProductId(RequestParams rp) {
-        string url = Config.SERVER_URL + "/api/items_in_product/" + rp.data[Param.PRODUCT_ID];
-        url += "?" + Param.TOKEN + "=" + rp.data[Param.TOKEN];
-        StartCoroutine(NetUtil.Get(url, rp.callback));
+    public static void GetItemWithProductId (string token, int productId, ApiCaller.ResponseHandle handle) {
+        ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
+        rp.data = new Dictionary<string, string>();
+        rp.data.Add(Param.PRODUCT_ID, "" + productId);
+        rp.data.Add(Param.TOKEN, token);
+        rp.callback = handle;
+        obj.SendMessage("GetItemWithProductId", rp, SendMessageOptions.RequireReceiver);
     }
 
-    /*
-     * required: token, producer_id
-     */
-    public void GetProducer(RequestParams rp) {
-        string url = Config.SERVER_URL + "/api/producer/" + rp.data[Param.PRODUCER_ID];
-        url += "?" + Param.TOKEN + "=" + rp.data[Param.TOKEN];
-        StartCoroutine(NetUtil.Get(url, rp.callback));
+    public static void GetProducer (string token, int producerId, ApiCaller.ResponseHandle handle) {
+        ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
+        rp.data = new Dictionary<string, string>();
+        rp.data.Add(Param.PRODUCER_ID, "" + producerId);
+        rp.data.Add(Param.TOKEN, token);
+        rp.callback = handle;
+        obj.SendMessage("GetProducer", rp, SendMessageOptions.RequireReceiver);
     }
 
-    /*
-     * required: token, producer_id
-     */
-    public void GetProductsWithProducerId(RequestParams rp) {
-        string url = Config.SERVER_URL + "/api/products/" + rp.data[Param.PRODUCER_ID];
-        url += "?" + Param.TOKEN + "=" + rp.data[Param.TOKEN];
-        StartCoroutine(NetUtil.Get(url, rp.callback));
+    public static void GetProductsWithProducerId (string token, int producerId,
+                                                  ApiCaller.ResponseHandle handle) {
+        ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
+        rp.data = new Dictionary<string, string>();
+        rp.data.Add(Param.PRODUCER_ID, "" + producerId);
+        rp.data.Add(Param.TOKEN, token);
+        rp.callback = handle;
+        obj.SendMessage("GetProductsWithProducerId", rp, SendMessageOptions.RequireReceiver);
     }
-
 }
 

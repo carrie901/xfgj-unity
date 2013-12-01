@@ -9,10 +9,10 @@ public class ApiTest : UUnitTestCase
     [UUnitTest]
     public void AuthorizeTest() {
         GameObject obj = GameObject.Find("InitObj");
-        ApiController.RequestParams rp = new ApiController.RequestParams();
+        ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.APP_KEY, Config.APP_KEY);
-        rp.callback = new ApiController.ResponseHandle(AuthorizeCallback);
+        rp.callback = new ApiCaller.ResponseHandle(AuthorizeCallback);
         obj.SendMessage("Authorize", rp, SendMessageOptions.RequireReceiver);
     }
 
@@ -24,11 +24,11 @@ public class ApiTest : UUnitTestCase
     [UUnitTest]
     public void GetSceneTest() {
         GameObject obj = GameObject.Find("InitObj");
-        ApiController.RequestParams rp = new ApiController.RequestParams();
+        ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.SCENE_ID, "100001");
         rp.data.Add(Param.TOKEN, AppSetting.getInstance().token);
-        rp.callback = new ApiController.ResponseHandle(GetSceneCallback);
+        rp.callback = new ApiCaller.ResponseHandle(GetSceneCallback);
         obj.SendMessage("GetScene", rp, SendMessageOptions.RequireReceiver);
     }
 
@@ -43,10 +43,10 @@ public class ApiTest : UUnitTestCase
     [UUnitTest]
     public void GetScenesTest() {
         GameObject obj = GameObject.Find("InitObj");
-        ApiController.RequestParams rp = new ApiController.RequestParams();
+        ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.TOKEN, AppSetting.getInstance().token);
-        rp.callback = new ApiController.ResponseHandle(GetScenesCallback);
+        rp.callback = new ApiCaller.ResponseHandle(GetScenesCallback);
         obj.SendMessage("GetScenes", rp, SendMessageOptions.RequireReceiver);
     }
 
@@ -62,11 +62,11 @@ public class ApiTest : UUnitTestCase
     [UUnitTest]
     public void GetSceneTypeTest() {
         GameObject obj = GameObject.Find("InitObj");
-        ApiController.RequestParams rp = new ApiController.RequestParams();
+        ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.SCENE_TYPE_ID, "100001");
         rp.data.Add(Param.TOKEN, AppSetting.getInstance().token);
-        rp.callback = new ApiController.ResponseHandle(GetSceneTypeCallback);
+        rp.callback = new ApiCaller.ResponseHandle(GetSceneTypeCallback);
         obj.SendMessage("GetSceneType", rp, SendMessageOptions.RequireReceiver);
     }
 
@@ -80,10 +80,10 @@ public class ApiTest : UUnitTestCase
     [UUnitTest]
     public void GetAllSceneTypeTest() {
         GameObject obj = GameObject.Find("InitObj");
-        ApiController.RequestParams rp = new ApiController.RequestParams();
+        ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.TOKEN, AppSetting.getInstance().token);
-        rp.callback = new ApiController.ResponseHandle(GetAllSceneTypeCallback);
+        rp.callback = new ApiCaller.ResponseHandle(GetAllSceneTypeCallback);
         obj.SendMessage("GetAllSceneType", rp, SendMessageOptions.RequireReceiver);
     }
 
@@ -98,11 +98,11 @@ public class ApiTest : UUnitTestCase
     [UUnitTest]
     public void GetProductInSceneTest() {
         GameObject obj = GameObject.Find("InitObj");
-        ApiController.RequestParams rp = new ApiController.RequestParams();
+        ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.SCENE_ID, "100001");
         rp.data.Add(Param.TOKEN, AppSetting.getInstance().token);
-        rp.callback = new ApiController.ResponseHandle(GetProductInSceneCallback);
+        rp.callback = new ApiCaller.ResponseHandle(GetProductInSceneCallback);
         obj.SendMessage("GetProductInScene", rp, SendMessageOptions.RequireReceiver);
     }
 
@@ -114,11 +114,11 @@ public class ApiTest : UUnitTestCase
     [UUnitTest]
     public void GetProductTest() {
         GameObject obj = GameObject.Find("InitObj");
-        ApiController.RequestParams rp = new ApiController.RequestParams();
+        ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.PRODUCT_ID, "100001");
         rp.data.Add(Param.TOKEN, AppSetting.getInstance().token);
-        rp.callback = new ApiController.ResponseHandle(GetProductCallback);
+        rp.callback = new ApiCaller.ResponseHandle(GetProductCallback);
         obj.SendMessage("GetProduct", rp, SendMessageOptions.RequireReceiver);
     }
 
@@ -139,11 +139,11 @@ public class ApiTest : UUnitTestCase
     [UUnitTest]
     public void GetProducerTest() {
         GameObject obj = GameObject.Find("InitObj");
-        ApiController.RequestParams rp = new ApiController.RequestParams();
+        ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.PRODUCER_ID, "100001");
         rp.data.Add(Param.TOKEN, AppSetting.getInstance().token);
-        rp.callback = new ApiController.ResponseHandle(GetProducerCallback);
+        rp.callback = new ApiCaller.ResponseHandle(GetProducerCallback);
         obj.SendMessage("GetProducer", rp, SendMessageOptions.RequireReceiver);
     }
 
@@ -159,11 +159,11 @@ public class ApiTest : UUnitTestCase
     [UUnitTest]
     public void GetProductsWithProducerIdTest() {
         GameObject obj = GameObject.Find("InitObj");
-        ApiController.RequestParams rp = new ApiController.RequestParams();
+        ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.PRODUCER_ID, "100001");
         rp.data.Add(Param.TOKEN, AppSetting.getInstance().token);
-        rp.callback = new ApiController.ResponseHandle(GetProductsWithProducerIdCallback);
+        rp.callback = new ApiCaller.ResponseHandle(GetProductsWithProducerIdCallback);
         obj.SendMessage("GetProductsWithProducerId", rp, SendMessageOptions.RequireReceiver);
     }
 
