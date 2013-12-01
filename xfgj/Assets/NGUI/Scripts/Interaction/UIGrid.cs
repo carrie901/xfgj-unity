@@ -11,9 +11,8 @@ using System.Collections.Generic;
 /// If you want the cells to automatically set their scale based on the dimensions of their content, take a look at UITable.
 /// </summary>
 
-[ExecuteInEditMode]
 [AddComponentMenu("NGUI/Interaction/Grid")]
-public class UIGrid : MonoBehaviour
+public class UIGrid : UIWidgetContainer
 {
 	public enum Arrangement
 	{
@@ -21,29 +20,64 @@ public class UIGrid : MonoBehaviour
 		Vertical,
 	}
 
+	/// <summary>
+	/// Type of arrangement -- vertical or horizontal.
+	/// </summary>
+
 	public Arrangement arrangement = Arrangement.Horizontal;
+
+	/// <summary>
+	/// Maximum children per line.
+	/// If the arrangement is horizontal, this denotes the number of columns.
+	/// If the arrangement is vertical, this stands for the number of rows.
+	/// </summary>
+
 	public int maxPerLine = 0;
+
+	/// <summary>
+	/// The width of each of the cells.
+	/// </summary>
+
 	public float cellWidth = 200f;
+
+	/// <summary>
+	/// The height of each of the cells.
+	/// </summary>
+
 	public float cellHeight = 200f;
-	public bool repositionNow = false;
+
+	/// <summary>
+	/// Whether the children will be sorted alphabetically prior to repositioning.
+	/// </summary>
+
 	public bool sorted = false;
+
+	/// <summary>
+	/// Whether to ignore the disabled children or to treat them as being present.
+	/// </summary>
+
 	public bool hideInactive = true;
 
+	/// <summary>
+	/// Reposition the children on the next Update().
+	/// </summary>
+
+	public bool repositionNow { set { if (value) { mReposition = true; enabled = true; } } }
+
 	bool mStarted = false;
+	bool mReposition = false;
 
 	void Start ()
 	{
 		mStarted = true;
 		Reposition();
+		enabled = false;
 	}
 
 	void Update ()
 	{
-		if (repositionNow)
-		{
-			repositionNow = false;
-			Reposition();
-		}
+		if (mReposition) Reposition();
+		enabled = false;
 	}
 
 	static public int SortByName (Transform a, Transform b) { return string.Compare(a.name, b.name); }
@@ -52,14 +86,16 @@ public class UIGrid : MonoBehaviour
 	/// Recalculate the position of all elements within the grid, sorting them alphabetically if necessary.
 	/// </summary>
 
+	[ContextMenu("Execute")]
 	public void Reposition ()
 	{
-		if (!mStarted)
+		if (Application.isPlaying && !mStarted)
 		{
-			repositionNow = true;
+			mReposition = true;
 			return;
 		}
 
+		mReposition = false;
 		Transform myTrans = transform;
 
 		int x = 0;
@@ -115,7 +151,7 @@ public class UIGrid : MonoBehaviour
 			}
 		}
 
-		UIDraggablePanel drag = NGUITools.FindInParents<UIDraggablePanel>(gameObject);
+		UIScrollView drag = NGUITools.FindInParents<UIScrollView>(gameObject);
 		if (drag != null) drag.UpdateScrollbars(true);
 	}
 }

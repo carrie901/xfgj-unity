@@ -7,16 +7,8 @@
 #define USE_SIMPLE_DICTIONARY
 #endif
 
-#if UNITY_3_5 || UNITY_4_0
-#define OLD_UNITY
-#endif
-
 using UnityEngine;
 using System.Collections.Generic;
-
-#if !USE_SIMPLE_DICTIONARY && OLD_UNITY
-using System.Collections.Specialized;
-#endif
 
 /// <summary>
 /// UI Panel is responsible for collecting, sorting and updating widgets in addition to generating widgets' geometry.
@@ -26,6 +18,12 @@ using System.Collections.Specialized;
 [AddComponentMenu("NGUI/UI/Panel")]
 public class UIPanel : MonoBehaviour
 {
+	/// <summary>
+	/// List of active panels.
+	/// </summary>
+
+	static public BetterList<UIPanel> list = new BetterList<UIPanel>();
+
 	public enum DebugInfo
 	{
 		None,
@@ -54,14 +52,6 @@ public class UIPanel : MonoBehaviour
 	public bool generateNormals = false;
 
 	/// <summary>
-	/// Whether the panel will create an additional pass to write to depth.
-	/// Turning this on will double the number of draw calls, but will reduce fillrate.
-	/// In order to make the most out of this feature, move your widgets on the Z and minimize the amount of visible transparency.
-	/// </summary>
-
-	public bool depthPass = false;
-
-	/// <summary>
 	/// Whether widgets drawn by this panel are static (won't move). This will improve performance.
 	/// </summary>
 
@@ -83,70 +73,55 @@ public class UIPanel : MonoBehaviour
 	// Panel's alpha (affects the alpha of all widgets)
 	[HideInInspector][SerializeField] float mAlpha = 1f;
 
-	// Whether generated geometry is shown or hidden
-	[HideInInspector][SerializeField] DebugInfo mDebugInfo = DebugInfo.Gizmos;
-
 	// Clipping rectangle
 	[HideInInspector][SerializeField] UIDrawCall.Clipping mClipping = UIDrawCall.Clipping.None;
-	[HideInInspector][SerializeField] Vector4 mClipRange = Vector4.zero;
-	[HideInInspector][SerializeField] Vector2 mClipSoftness = new Vector2(40f, 40f);
+	[HideInInspector][SerializeField] Vector4 mClipRange = new Vector4(0f, 0f, 300f, 200f);
+	[HideInInspector][SerializeField] Vector2 mClipSoftness = new Vector2(4f, 4f);
+	[HideInInspector][SerializeField] int mDepth = 0;
 
-#if OLD_UNITY
-	// List of managed transforms
-#if USE_SIMPLE_DICTIONARY
-	Dictionary<Transform, UINode> mChildren = new Dictionary<Transform, UINode>();
-#else
-	OrderedDictionary mChildren = new OrderedDictionary();
-#endif
-	// When traversing through the child dictionary, deleted values are stored here
-	List<Transform> mRemoved = new List<Transform>();
-#endif
-	// List of all widgets managed by this panel
-	BetterList<UIWidget> mWidgets = new BetterList<UIWidget>();
-
-	// Widgets using these materials will be rebuilt next frame
-	BetterList<Material> mChanged = new BetterList<Material>();
-
-	// List of UI Screens created on hidden and invisible game objects
-	BetterList<UIDrawCall> mDrawCalls = new BetterList<UIDrawCall>();
+	// Whether a full rebuild of geometry buffers is required
+	static bool mRebuild = false;
+	static bool mSort = false;
 
 	// Cached in order to reduce memory allocations
-	BetterList<Vector3> mVerts = new BetterList<Vector3>();
-	BetterList<Vector3> mNorms = new BetterList<Vector3>();
-	BetterList<Vector4> mTans = new BetterList<Vector4>();
-	BetterList<Vector2> mUvs = new BetterList<Vector2>();
-	BetterList<Color32> mCols = new BetterList<Color32>();
+	static BetterList<Vector3> mVerts = new BetterList<Vector3>();
+	static BetterList<Vector3> mNorms = new BetterList<Vector3>();
+	static BetterList<Vector4> mTans = new BetterList<Vector4>();
+	static BetterList<Vector2> mUvs = new BetterList<Vector2>();
+	static BetterList<Color32> mCols = new BetterList<Color32>();
 
 	GameObject mGo;
 	Transform mTrans;
 	Camera mCam;
-	int mLayer = -1;
-	bool mDepthChanged = false;
-#if OLD_UNITY
-	bool mRebuildAll = false;
-	bool mWidgetsAdded = false;
-
-	// Whether the panel should check the visibility of its widgets (set when the clip range changes).
-	bool mCheckVisibility = false;
-	bool mCulled = false;
-#endif
-
+	UIPanel mParent;
+	bool mFindParent = true;
 	float mCullTime = 0f;
 	float mUpdateTime = 0f;
 	float mMatrixTime = 0f;
+	int mLayer = -1;
 
 	// Values used for visibility checks
 	static float[] mTemp = new float[4];
 	Vector2 mMin = Vector2.zero;
 	Vector2 mMax = Vector2.zero;
 
-	// Used for SetAlphaRecursive()
-	UIPanel[] mChildPanels;
+	// List of all the draw calls created by this panel
+	BetterList<UIDrawCall> mDrawCalls = new BetterList<UIDrawCall>();
 
-#if UNITY_EDITOR
-	// Screen size, saved for gizmos, since Screen.width and Screen.height returns the Scene view's dimensions in OnDrawGizmos.
-	Vector2 mScreenSize = Vector2.one;
-#endif
+	/// <summary>
+	/// Helper property that returns the first unused depth value.
+	/// </summary>
+
+	static public int nextUnusedDepth
+	{
+		get
+		{
+			int highest = int.MinValue;
+			for (int i = 0; i < list.size; ++i)
+				highest = Mathf.Max(highest, list[i].depth);
+			return (highest == int.MinValue) ? 0 : highest + 1;
+		}
+	}
 
 	/// <summary>
 	/// Cached for speed. Can't simply return 'mGo' set in Awake because this function may be called on a prefab.
@@ -159,6 +134,24 @@ public class UIPanel : MonoBehaviour
 	/// </summary>
 
 	public Transform cachedTransform { get { if (mTrans == null) mTrans = transform; return mTrans; } }
+
+	/// <summary>
+	/// Parent panel is used to determine cumulative alpha.
+	/// </summary>
+
+	public UIPanel parent
+	{
+		get
+		{
+			if (mFindParent)
+			{
+				mFindParent = false;
+				Transform t = cachedTransform.parent;
+				mParent = (t != null) ? NGUITools.FindInParents<UIPanel>(t) : null;
+			}
+			return mParent;
+		}
+	}
 
 	/// <summary>
 	/// Panel's alpha affects everything drawn by the panel.
@@ -177,62 +170,77 @@ public class UIPanel : MonoBehaviour
 			if (mAlpha != val)
 			{
 				mAlpha = val;
-#if OLD_UNITY
-				mCheckVisibility = true;
-#endif
-				for (int i = 0; i < mDrawCalls.size; ++i)
-				{
-					UIDrawCall dc = mDrawCalls[i];
-					MarkMaterialAsChanged(dc.material, false);
-				}
-
-				for (int i = 0; i < mWidgets.size; ++i)
-				{
-					mWidgets[i].MarkAsChangedLite();
-				}
+				SetDirty();
 			}
 		}
 	}
 
 	/// <summary>
-	/// Recursively set the alpha for this panel and all of its children.
+	/// Final alpha, taking all parent panels into consideration.
 	/// </summary>
 
-	public void SetAlphaRecursive (float val, bool rebuildList)
-	{
-		if (rebuildList || mChildPanels == null)
-			mChildPanels = GetComponentsInChildren<UIPanel>(true);
-		for (int i = 0, imax = mChildPanels.Length; i < imax; ++i)
-			mChildPanels[i].alpha = val;
-	}
+	public float finalAlpha { get { return (parent != null) ? mParent.alpha * mAlpha : mAlpha; } }
 
 	/// <summary>
-	/// Whether the panel's generated geometry will be hidden or not.
+	/// Panels can have their own depth value that will change the order with which everything they manage gets drawn.
 	/// </summary>
 
-	public DebugInfo debugInfo
+	public int depth
 	{
 		get
 		{
-			return mDebugInfo;
+			return mDepth;
 		}
 		set
 		{
-			if (mDebugInfo != value)
+			if (mDepth != value)
 			{
-				mDebugInfo = value;
-				BetterList<UIDrawCall> list = drawCalls;
-				HideFlags flags = (mDebugInfo == DebugInfo.Geometry) ? HideFlags.DontSave | HideFlags.NotEditable : HideFlags.HideAndDontSave;
+				mDepth = value;
+				mRebuild = true;
+				mSort = true;
 
-				for (int i = 0, imax = list.size; i < imax;  ++i)
+				for (int i = 0; i < UIDrawCall.list.size; ++i)
 				{
-					UIDrawCall dc = list[i];
-					GameObject go = dc.gameObject;
-					NGUITools.SetActiveSelf(go, false);
-					go.hideFlags = flags;
-					NGUITools.SetActiveSelf(go, true);
+					UIDrawCall dc = UIDrawCall.list[i];
+					if (dc != null) dc.isDirty = true;
 				}
+
+				for (int i = 0; i < UIWidget.list.size; ++i)
+					UIWidget.list[i].MarkAsChangedLite();
+#if UNITY_EDITOR
+				UnityEditor.EditorUtility.SetDirty(this);
+#endif
+				list.Sort(CompareFunc);
 			}
+		}
+	}
+
+	/// <summary>
+	/// Function that can be used to depth-sort panels.
+	/// </summary>
+
+	static public int CompareFunc (UIPanel a, UIPanel b)
+	{
+		if (a != null && b != null)
+		{
+			if (a.mDepth < b.mDepth) return -1;
+			if (a.mDepth > b.mDepth) return 1;
+		}
+		return 0;
+	}
+
+	/// <summary>
+	/// Number of draw calls produced by this panel.
+	/// </summary>
+
+	public int drawCallCount
+	{
+		get
+		{
+			for (int i = mDrawCalls.size; i > 0; )
+				if (!mDrawCalls.buffer[--i])
+					mDrawCalls.RemoveAt(i);
+			return mDrawCalls.size;
 		}
 	}
 
@@ -250,9 +258,6 @@ public class UIPanel : MonoBehaviour
 		{
 			if (mClipping != value)
 			{
-#if OLD_UNITY
-				mCheckVisibility = true;
-#endif
 				mClipping = value;
 				mMatrixTime = 0f;
 				UpdateDrawcalls();
@@ -274,10 +279,7 @@ public class UIPanel : MonoBehaviour
 		{
 			if (mClipRange != value)
 			{
-				mCullTime = (mCullTime == 0f) ? 0.001f : Time.realtimeSinceStartup + 0.15f;
-#if OLD_UNITY
-				mCheckVisibility = true;
-#endif
+				mCullTime = (mCullTime == 0f) ? 0.001f : RealTime.time + 0.15f;
 				mClipRange = value;
 				mMatrixTime = 0f;
 				UpdateDrawcalls();
@@ -291,45 +293,53 @@ public class UIPanel : MonoBehaviour
 
 	public Vector2 clipSoftness { get { return mClipSoftness; } set { if (mClipSoftness != value) { mClipSoftness = value; UpdateDrawcalls(); } } }
 
-	/// <summary>
-	/// Widgets managed by this panel.
-	/// </summary>
-
-	public BetterList<UIWidget> widgets { get { return mWidgets; } }
+	// Temporary variable to avoid GC allocation
+	static Vector3[] mCorners = new Vector3[4];
 
 	/// <summary>
-	/// Retrieve the list of all active draw calls, removing inactive ones in the process.
+	/// World-space corners of the panel's clipping rectangle. The order is bottom-left, top-left, top-right, bottom-right.
 	/// </summary>
 
-	public BetterList<UIDrawCall> drawCalls
+	public Vector3[] worldCorners
 	{
 		get
 		{
-			for (int i = mDrawCalls.size; i > 0; )
+			if (mClipping == UIDrawCall.Clipping.None)
 			{
-				UIDrawCall dc = mDrawCalls[--i];
-				if (dc == null) mDrawCalls.RemoveAt(i);
+				Vector2 size = GetSize();
+
+				float x0 = -0.5f * size.x;
+				float y0 = -0.5f * size.y;
+				float x1 = x0 + size.x;
+				float y1 = y0 + size.y;
+
+				Transform wt = (mCam != null) ? mCam.transform : null;
+
+				if (wt != null)
+				{
+					mCorners[0] = wt.TransformPoint(x0, y0, 0f);
+					mCorners[1] = wt.TransformPoint(x0, y1, 0f);
+					mCorners[2] = wt.TransformPoint(x1, y1, 0f);
+					mCorners[3] = wt.TransformPoint(x1, y0, 0f);
+				}
 			}
-			return mDrawCalls;
+			else
+			{
+				float x0 = mClipRange.x - 0.5f * mClipRange.z;
+				float y0 = mClipRange.y - 0.5f * mClipRange.w;
+				float x1 = x0 + mClipRange.z;
+				float y1 = y0 + mClipRange.w;
+
+				Transform wt = cachedTransform;
+
+				mCorners[0] = wt.TransformPoint(x0, y0, 0f);
+				mCorners[1] = wt.TransformPoint(x0, y1, 0f);
+				mCorners[2] = wt.TransformPoint(x1, y1, 0f);
+				mCorners[3] = wt.TransformPoint(x1, y0, 0f);
+			}
+			return mCorners;
 		}
 	}
-
-#if OLD_UNITY
-	/// <summary>
-	/// Helper function to retrieve the node of the specified transform.
-	/// </summary>
-
-	UINode GetNode (Transform t)
-	{
-		UINode node = null;
-#if USE_SIMPLE_DICTIONARY
-		if (t != null) mChildren.TryGetValue(t, out node);
-#else
-		if (t != null && mChildren.Contains(t)) node = (UINode)mChildren[t];
-#endif
-		return node;
-	}
-#endif
 
 	/// <summary>
 	/// Returns whether the specified rectangle is visible by the panel. The coordinates must be in world space.
@@ -398,244 +408,107 @@ public class UIPanel : MonoBehaviour
 		// No clipping? No point in checking.
 		if (mClipping == UIDrawCall.Clipping.None) return true;
 
-		Vector2 size = w.relativeSize;
-		Vector2 a = Vector2.Scale(w.pivotOffset, size);
-		Vector2 b = a;
-
-		a.x += size.x;
-		a.y -= size.y;
-
-		// Transform coordinates into world space
-		Transform wt = w.cachedTransform;
-		Vector3 v0 = wt.TransformPoint(a);
-		Vector3 v1 = wt.TransformPoint(new Vector2(a.x, b.y));
-		Vector3 v2 = wt.TransformPoint(new Vector2(b.x, a.y));
-		Vector3 v3 = wt.TransformPoint(b);
-		return IsVisible(v0, v1, v2, v3);
+		Vector3[] corners = w.worldCorners;
+		return IsVisible(corners[0], corners[1], corners[2], corners[3]);
 	}
 
 	/// <summary>
-	/// Helper function that marks the specified material as having changed so its mesh is rebuilt next frame.
+	/// Causes all draw calls to be re-created on the next update.
 	/// </summary>
 
-	public void MarkMaterialAsChanged (Material mat, bool sort)
+	static public void RebuildAllDrawCalls (bool sort) { mRebuild = true; if (sort) mSort = true; }
+
+	/// <summary>
+	/// Invalidate the panel's draw calls, forcing them to be rebuilt on the next update.
+	/// This call also affects all child panels.
+	/// </summary>
+
+	public void SetDirty ()
 	{
-		if (mat != null)
+		for (int i = 0; i < UIDrawCall.list.size; ++i)
 		{
-			if (sort) mDepthChanged = true;
-			if (!mChanged.Contains(mat))
-				mChanged.Add(mat);
+			UIDrawCall dc = UIDrawCall.list[i];
+			if (dc != null && dc.manager == this)
+				dc.isDirty = true;
+		}
+
+		for (int i = 0; i < UIWidget.list.size; ++i)
+		{
+			UIWidget w = UIWidget.list[i];
+			if (w.panel == this) w.MarkAsChangedLite();
+		}
+
+		for (int i = 0; i < list.size; ++i)
+		{
+			UIPanel p = list[i];
+			if (p != null && p != this && p.parent == this)
+				p.SetDirty();
 		}
 	}
 
-#if OLD_UNITY
 	/// <summary>
-	/// Whether the specified transform is being watched by the panel.
+	/// Get a draw call at the specified index position.
 	/// </summary>
 
-	public bool WatchesTransform (Transform t)
+	UIDrawCall GetDrawCall (int index, Material mat, Texture tex, Shader shader)
 	{
-#if USE_SIMPLE_DICTIONARY
-		return t == cachedTransform || mChildren.ContainsKey(t);
-#else
-		return t == cachedTransform || mChildren.Contains(t);
-#endif
-	}
-
-	/// <summary>
-	/// Add the specified transform to the managed list.
-	/// </summary>
-
-	UINode AddTransform (Transform t)
-	{
-		UINode node = null;
-		UINode retVal = null;
-
-		// Add transforms all the way up to the panel
-		while (t != null && t != cachedTransform)
+		if (index < UIDrawCall.list.size)
 		{
-#if USE_SIMPLE_DICTIONARY
-			if (mChildren.TryGetValue(t, out node))
-			{
-				if (retVal == null)
-					retVal = node;
-			}
-#else
-			if (mChildren.Contains(t))
-			{
-				if (retVal == null)
-					retVal = (UINode)mChildren[t];
-			}
-#endif
-			else
-			{
-				// The node is not yet managed -- add it to the list
-				node = new UINode(t);
-				if (retVal == null) retVal = node;
-				mChildren.Add(t, node);
-			}
-			t = t.parent;
-		}
-		return retVal;
-	}
+			UIDrawCall dc = UIDrawCall.list.buffer[index];
 
-	/// <summary>
-	/// Remove the specified transform from the managed list.
-	/// </summary>
+			// If the material and texture match, keep using the same draw call
+			if (dc != null && dc.manager == this &&
+				dc.baseMaterial == mat &&
+				dc.mainTexture == tex &&
+				dc.shader == shader) return dc;
 
-	void RemoveTransform (Transform t)
-	{
-		if (t != null)
-		{
-#if USE_SIMPLE_DICTIONARY
-			while (mChildren.Remove(t))
+			// Otherwise we need to destroy all the draw calls that follow
+			for (int i = UIDrawCall.list.size; i > index; )
 			{
-#else
-			while (mChildren.Contains(t))
-			{
-				mChildren.Remove(t);
-#endif
-				t = t.parent;
-				if (t == null || t == mTrans || t.childCount > 1) break;
-			}
-		}
-	}
-#endif
-
-	/// <summary>
-	/// Add the specified widget to the managed list.
-	/// </summary>
-
-	public void AddWidget (UIWidget w)
-	{
-		if (w != null)
-		{
-#if UNITY_EDITOR
-			if (w.cachedTransform.parent != null)
-			{
-				UIWidget parentWidget = NGUITools.FindInParents<UIWidget>(w.cachedTransform.parent.gameObject);
-
-				if (parentWidget != null)
+				UIDrawCall rem = UIDrawCall.list.buffer[--i];
+				
+				if (rem != null)
 				{
-					w.cachedTransform.parent = parentWidget.cachedTransform.parent;
-					Debug.LogError("You should never nest widgets! Parent them to a common game object instead. Forcefully changing the parent.", w);
-
-					// If the error above gets triggered, it means that you parented one widget to another.
-					// If left unchecked, this may lead to odd behavior in the UI. Consider restructuring your UI.
-					// For example, if you were trying to do this:
-
-					// Widget #1
-					//  |
-					//  +- Widget #2
-
-					// You can do this instead, fixing the problem:
-
-					// GameObject (scale 1, 1, 1)
-					//  |
-					//  +- Widget #1
-					//  |
-					//  +- Widget #2
+					UIDrawCall.list.RemoveAt(i);
+					NGUITools.DestroyImmediate(rem.gameObject);
 				}
 			}
-#endif
-#if OLD_UNITY
-			UINode node = AddTransform(w.cachedTransform);
-
-			if (node != null)
-			{
-				node.widget = w;
-				w.visibleFlag = 1;
-
-				if (!mWidgets.Contains(w))
-				{
-					mWidgets.Add(w);
-
-					if (!mChanged.Contains(w.material))
-						mChanged.Add(w.material);
-
-					mDepthChanged = true;
-					mWidgetsAdded = true;
-				}
-			}
-			else
-			{
-				Debug.LogError("Unable to find an appropriate root for " + NGUITools.GetHierarchy(w.cachedGameObject) +
-					"\nPlease make sure that there is at least one game object above this widget!", w.cachedGameObject);
-			}
-#else
-			if (!mWidgets.Contains(w))
-			{
-				mWidgets.Add(w);
-
-				if (!mChanged.Contains(w.material))
-					mChanged.Add(w.material);
-
-				mDepthChanged = true;
-			}
-#endif
-		}
-	}
-
-	/// <summary>
-	/// Remove the specified widget from the managed list.
-	/// </summary>
-
-	public void RemoveWidget (UIWidget w)
-	{
-		if (w != null)
-		{
-#if OLD_UNITY
-			// Do we have this node? Mark the widget's material as having been changed
-			UINode pc = GetNode(w.cachedTransform);
-
-			if (pc != null)
-			{
-				// Mark the material as having been changed
-				if (pc.visibleFlag == 1 && !mChanged.Contains(w.material))
-					mChanged.Add(w.material);
-
-				// Remove this transform
-				RemoveTransform(w.cachedTransform);
-			}
-			mWidgets.Remove(w);
-#else
-			if (w != null && mWidgets.Remove(w) && w.material != null)
-				mChanged.Add(w.material);
-#endif
-		}
-	}
-
-	/// <summary>
-	/// Get or create a UIScreen responsible for drawing the widgets using the specified material.
-	/// </summary>
-
-	UIDrawCall GetDrawCall (Material mat, bool createIfMissing)
-	{
-		for (int i = 0, imax = drawCalls.size; i < imax; ++i)
-		{
-			UIDrawCall dc = drawCalls.buffer[i];
-			if (dc.material == mat) return dc;
 		}
 
-		UIDrawCall sc = null;
-
-		if (createIfMissing)
-		{
 #if UNITY_EDITOR
-			// If we're in the editor, create the game object with hide flags set right away
-			GameObject go = UnityEditor.EditorUtility.CreateGameObjectWithHideFlags("_UIDrawCall [" + mat.name + "]",
-				(mDebugInfo == DebugInfo.Geometry) ? HideFlags.DontSave | HideFlags.NotEditable : HideFlags.HideAndDontSave);
+		string name;
+
+		if (tex != null) name = tex.name;
+		else if (shader != null) name = shader.name;
+		else if (mat != null) name = mat.name;
+		else name = "";
+
+		// If we're in the editor, create the game object with hide flags set right away
+		GameObject go = UnityEditor.EditorUtility.CreateGameObjectWithHideFlags("_UIDrawCall [" + name + "]",
+			//HideFlags.DontSave | HideFlags.NotEditable);
+			HideFlags.HideAndDontSave);
 #else
-			GameObject go = new GameObject("_UIDrawCall [" + mat.name + "]");
-			//go.hideFlags = HideFlags.DontSave;
-			DontDestroyOnLoad(go);
+		GameObject go = new GameObject();
+		DontDestroyOnLoad(go);
 #endif
-			go.layer = cachedGameObject.layer;
-			sc = go.AddComponent<UIDrawCall>();
-			sc.material = mat;
-			mDrawCalls.Add(sc);
-		}
-		return sc;
+		go.layer = cachedGameObject.layer;
+		
+		// Create the draw call
+		UIDrawCall drawCall = go.AddComponent<UIDrawCall>();
+		drawCall.baseMaterial = mat;
+		drawCall.mainTexture = tex;
+		drawCall.shader = shader;
+		drawCall.renderQueue = UIDrawCall.list.size;
+		drawCall.manager = this;
+		//Debug.Log("Added DC " + mat.name + " as " + UIDrawCall.list.size);
+
+		for (int i = mDrawCalls.size; i > 0; )
+			if (!mDrawCalls.buffer[--i])
+				mDrawCalls.RemoveAt(i);
+
+		mDrawCalls.Add(drawCall);
+		UIDrawCall.list.Add(drawCall);
+		return drawCall;
 	}
 
 	/// <summary>
@@ -665,27 +538,19 @@ public class UIPanel : MonoBehaviour
 
 	void OnEnable ()
 	{
-#if OLD_UNITY
-		mRebuildAll = true;
-
-		for (int i = 0; i < mWidgets.size; ++i)
+		// Apparently having a rigidbody helps
+		if (rigidbody == null)
 		{
-			UIWidget w = mWidgets.buffer[i];
-			AddWidget(w);
+			Rigidbody rb = gameObject.AddComponent<Rigidbody>();
+			rb.isKinematic = true;
+			rb.useGravity = false;
 		}
-#else
-		for (int i = 0; i < mWidgets.size; )
-		{
-			UIWidget w = mWidgets.buffer[i];
 
-			if (w != null)
-			{
-				MarkMaterialAsChanged(w.material, true);
-				++i;
-			}
-			else mWidgets.RemoveAt(i);
-		}
-#endif
+		mFindParent = true;
+		mRebuild = true;
+		mSort = true;
+		list.Add(this);
+		list.Sort(CompareFunc);
 	}
 
 	/// <summary>
@@ -694,16 +559,20 @@ public class UIPanel : MonoBehaviour
 
 	void OnDisable ()
 	{
+		mParent = null;
+
 		for (int i = mDrawCalls.size; i > 0; )
 		{
 			UIDrawCall dc = mDrawCalls.buffer[--i];
-			if (dc != null) NGUITools.DestroyImmediate(dc.gameObject);
+			
+			if (dc != null)
+			{
+				UIDrawCall.list.Remove(dc);
+				NGUITools.DestroyImmediate(dc.gameObject);
+			}
 		}
-		mDrawCalls.Release();
-		mChanged.Release();
-#if OLD_UNITY
-		mChildren.Clear();
-#endif
+		mDrawCalls.Clear();
+		list.Remove(this);
 	}
 
 	/// <summary>
@@ -734,203 +603,11 @@ public class UIPanel : MonoBehaviour
 		}
 	}
 
-#if OLD_UNITY
-	// Temporary list used in GetChangeFlag()
-	static BetterList<UINode> mHierarchy = new BetterList<UINode>();
-
-	/// <summary>
-	/// Convenience function that figures out the panel's correct change flag by searching the parents.
-	/// </summary>
-
-	int GetChangeFlag (UINode start)
-	{
-		int flag = start.changeFlag;
-
-		if (flag == -1)
-		{
-			Transform trans = start.trans.parent;
-			UINode sub;
-
-			// Keep going until we find a set flag
-			for (;;)
-			{
-				// Check the parent's flag
-#if USE_SIMPLE_DICTIONARY
-				if (trans != null && mChildren.TryGetValue(trans, out sub))
-				{
-#else
-				if (trans != null && mChildren.Contains(trans))
-				{
-					sub = (UINode)mChildren[trans];
-#endif
-					flag = sub.changeFlag;
-					trans = trans.parent;
-
-					// If the flag hasn't been set either, add this child to the hierarchy
-					if (flag == -1) mHierarchy.Add(sub);
-					else break;
-				}
-				else
-				{
-					flag = 0;
-					break;
-				}
-			}
-
-			// Update the parent flags
-			for (int i = 0, imax = mHierarchy.size; i < imax; ++i)
-			{
-				UINode pc = mHierarchy.buffer[i];
-				pc.changeFlag = flag;
-			}
-			mHierarchy.Clear();
-		}
-		return flag;
-	}
-
-	/// <summary>
-	/// Run through all managed transforms and see if they've changed.
-	/// </summary>
-
-	void UpdateTransforms ()
-	{
-		bool transformsChanged = false;
-		bool shouldCull = false;
-
-#if UNITY_EDITOR
-		shouldCull = (clipping != UIDrawCall.Clipping.None) && (!Application.isPlaying || (cullWhileDragging || mUpdateTime > mCullTime));
-		if (!Application.isPlaying || !widgetsAreStatic || mWidgetsAdded || shouldCull != mCulled)
-#else
-		shouldCull = (clipping != UIDrawCall.Clipping.None) && (mUpdateTime > mCullTime);
-		if (!widgetsAreStatic || mWidgetsAdded || shouldCull != mCulled)
-#endif
-		{
-#if USE_SIMPLE_DICTIONARY
-			foreach (KeyValuePair<Transform, UINode> child in mChildren)
-			{
-				UINode node = child.Value;
-#else
-			for (int i = 0, imax = mChildren.Count; i < imax; ++i)
-			{
-				UINode node = (UINode)mChildren[i];
-#endif
-				if (node.trans == null)
-				{
-					mRemoved.Add(node.trans);
-					continue;
-				}
-
-				if (node.HasChanged())
-				{
-					node.changeFlag = 1;
-					transformsChanged = true;
-#if UNITY_EDITOR
-					Vector3 s = node.trans.lossyScale;
-					float min = Mathf.Abs(Mathf.Min(s.x, s.y));
-
-					if (min == 0f)
-					{
-						Debug.LogError("Scale of 0 is invalid! Zero cannot be divided by, which causes problems. Use a small value instead, such as 0.01\n" +
-						node.trans.lossyScale, node.trans);
-					}
-#endif
-				}
-				else node.changeFlag = -1;
-			}
-
-			// Clean up the deleted transforms
-			for (int i = 0, imax = mRemoved.Count; i < imax; ++i) mChildren.Remove(mRemoved[i]);
-			mRemoved.Clear();
-		}
-
-		// If the children weren't culled but should be, check their visibility
-		if (!mCulled && shouldCull) mCheckVisibility = true;
-
-		// If something has changed, propagate the changes *down* the tree hierarchy (to children).
-		// An alternative (but slower) approach would be to do a pc.trans.GetComponentsInChildren<UIWidget>()
-		// in the loop above, and mark each one as dirty.
-
-		if (mCheckVisibility || transformsChanged || mRebuildAll)
-		{
-#if USE_SIMPLE_DICTIONARY
-			foreach (KeyValuePair<Transform, UINode> child in mChildren)
-			{
-				UINode pc = child.Value;
-#else
-			for (int i = 0, imax = mChildren.Count; i < imax; ++i)
-			{
-				UINode pc = (UINode)mChildren[i];
-#endif
-				if (pc.widget != null)
-				{
-					int visibleFlag = 1;
-
-					// No sense in checking the visibility if we're not culling anything (as the visibility is always 'true')
-					if (shouldCull || transformsChanged)
-					{
-						// If the change flag has not yet been determined...
-						if (pc.changeFlag == -1) pc.changeFlag = GetChangeFlag(pc);
-
-						// Is the widget visible?
-						if (shouldCull) visibleFlag = (mCheckVisibility || pc.changeFlag == 1) ? (IsVisible(pc.widget) ? 1 : 0) : pc.visibleFlag;
-					}
-
-					// If visibility changed, mark the node as changed as well
-					if (pc.visibleFlag != visibleFlag) pc.changeFlag = 1;
-
-					// If the node has changed and the widget is visible (or was visible before)
-					if (pc.changeFlag == 1 && (visibleFlag == 1 || pc.visibleFlag != 0))
-					{
-						// Update the visibility flag
-						pc.visibleFlag = visibleFlag;
-						Material mat = pc.widget.material;
-
-						// Add this material to the list of changed materials
-						if (!mChanged.Contains(mat))
-							mChanged.Add(mat);
-					}
-				}
-			}
-		}
-		mCulled = shouldCull;
-		mCheckVisibility = false;
-		mWidgetsAdded = false;
-	}
-
-	/// <summary>
-	/// Update all widgets and rebuild their geometry if necessary.
-	/// </summary>
-
-	void UpdateWidgets ()
-	{
-#if USE_SIMPLE_DICTIONARY
-		foreach (KeyValuePair<Transform, UINode> c in mChildren)
-		{
-			UINode pc = c.Value;
-#else
-		for (int i = 0, imax = mChildren.Count; i < imax; ++i)
-		{
-			UINode pc = (UINode)mChildren[i];
-#endif
-			UIWidget w = pc.widget;
-
-			// If the widget is visible, update it
-			if (pc.visibleFlag == 1 && w != null && w.UpdateGeometry(this, ref worldToLocal, (pc.changeFlag == 1), generateNormals))
-			{
-				// We will need to refill this buffer
-				if (!mChanged.Contains(w.material))
-					mChanged.Add(w.material);
-			}
-			pc.changeFlag = 0;
-		}
-	}
-#endif
-
 	/// <summary>
 	/// Update the clipping rect in the shaders and draw calls' positions.
 	/// </summary>
 
-	public void UpdateDrawcalls ()
+	void UpdateDrawcalls ()
 	{
 		Vector4 range = Vector4.zero;
 
@@ -956,13 +633,19 @@ public class UIPanel : MonoBehaviour
 		UIDrawCall dc;
 		Transform dt;
 
-		for (int i = 0, imax = mDrawCalls.size; i < imax; ++i)
+		for (int i = mDrawCalls.size; i > 0; )
 		{
-			dc = mDrawCalls.buffer[i];
+			dc = mDrawCalls.buffer[--i];
+
+			if (dc == null)
+			{
+				mDrawCalls.RemoveAt(i);
+				continue;
+			}
+
 			dc.clipping = mClipping;
 			dc.clipRange = range;
 			dc.clipSoftness = mClipSoftness;
-			dc.depthPass = depthPass && mClipping == UIDrawCall.Clipping.None;
 
 			// Set the draw call's transform to match the panel's.
 			// Note that parenting directly to the panel causes unity to crash as soon as you hit Play.
@@ -974,79 +657,74 @@ public class UIPanel : MonoBehaviour
 	}
 
 	/// <summary>
-	/// Set the draw call's geometry responsible for the specified material.
-	/// </summary>
-
-	void Fill (Material mat)
-	{
-		// Fill the buffers for the specified material
-		for (int i = 0; i < mWidgets.size; )
-		{
-			UIWidget w = mWidgets.buffer[i];
-
-			if (w == null)
-			{
-				mWidgets.RemoveAt(i);
-				continue;
-			}
-#if OLD_UNITY
-			else if (w.visibleFlag == 1 && w.material == mat)
-#else
-			else if (w.material == mat && w.isVisible)
-#endif
-			{
-				if (w.panel == this)
-				{
-					if (generateNormals) w.WriteToBuffers(mVerts, mUvs, mCols, mNorms, mTans);
-					else w.WriteToBuffers(mVerts, mUvs, mCols, null, null);
-				}
-				else
-				{
-					mWidgets.RemoveAt(i);
-					continue;
-				}
-			}
-			++i;
-		}
-
-		if (mVerts.size > 0)
-		{
-			// Rebuild the draw call's mesh
-			UIDrawCall dc = GetDrawCall(mat, true);
-			dc.depthPass = depthPass && mClipping == UIDrawCall.Clipping.None;
-			dc.Set(mVerts, generateNormals ? mNorms : null, generateNormals ? mTans : null, mUvs, mCols);
-		}
-		else
-		{
-			// There is nothing to draw for this material -- eliminate the draw call
-			UIDrawCall dc = GetDrawCall(mat, false);
-
-			if (dc != null)
-			{
-				mDrawCalls.Remove(dc);
-				NGUITools.DestroyImmediate(dc.gameObject);
-			}
-		}
-
-		// Cleanup
-		mVerts.Clear();
-		mNorms.Clear();
-		mTans.Clear();
-		mUvs.Clear();
-		mCols.Clear();
-	}
-
-	/// <summary>
 	/// Main update function
 	/// </summary>
 
 	void LateUpdate ()
 	{
-		mUpdateTime = Time.realtimeSinceStartup;
-		UpdateTransformMatrix();
-#if OLD_UNITY
-		UpdateTransforms();
-#endif
+		// Only the very first panel should be doing the update logic
+		if (list[0] != this) return;
+
+		// Update all panels
+		for (int i = 0; i < list.size; ++i)
+		{
+			UIPanel panel = list[i];
+			panel.mUpdateTime = RealTime.time;
+			panel.UpdateTransformMatrix();
+			panel.UpdateLayers();
+			panel.UpdateWidgets();
+		}
+
+		if (mSort)
+		{
+			UIWidget.list.Sort(UIWidget.CompareFunc);
+			Fill();
+		}
+		else if (mRebuild)
+		{
+			Fill();
+		}
+		else
+		{
+			for (int i = 0; i < UIDrawCall.list.size; )
+			{
+				UIDrawCall dc = UIDrawCall.list[i];
+
+				if (!dc)
+				{
+					UIDrawCall.list.RemoveAt(i);
+					continue;
+				}
+				else if (dc.isDirty)
+				{
+					if (!Fill(dc))
+					{
+						UIDrawCall.list.RemoveAt(i);
+						NGUITools.DestroyImmediate(dc.gameObject);
+						continue;
+					}
+				}
+				++i;
+			}
+		}
+
+		// Update the clipping rects
+		for (int i = 0; i < list.size; ++i)
+		{
+			UIPanel panel = list[i];
+			panel.UpdateDrawcalls();
+		}
+
+		mRebuild = false;
+		mSort = false;
+	}
+
+	/// <summary>
+	/// Update the widget layers if the panel's layer has changed.
+	/// </summary>
+
+	void UpdateLayers ()
+	{
 		// Always move widgets to the panel's layer
 		if (mLayer != cachedGameObject.layer)
 		{
@@ -1054,53 +732,119 @@ public class UIPanel : MonoBehaviour
 			UICamera uic = UICamera.FindCameraForLayer(mLayer);
 			mCam = (uic != null) ? uic.cachedCamera : NGUITools.FindCameraForLayer(mLayer);
 			SetChildLayer(cachedTransform, mLayer);
-			for (int i = 0, imax = drawCalls.size; i < imax; ++i) mDrawCalls.buffer[i].gameObject.layer = mLayer;
-		}
 
-#if OLD_UNITY
-		UpdateWidgets();
-#else
+			for (int i = 0, imax = mDrawCalls.size; i < imax; ++i)
+			{
+				UIDrawCall dc = mDrawCalls[i];
+				if (dc != null) dc.gameObject.layer = mLayer;
+			}
+		}
+	}
+
+	/// <summary>
+	/// Update all of the widgets belonging to this panel.
+	/// </summary>
+
+	void UpdateWidgets()
+	{
 #if UNITY_EDITOR
 		bool forceVisible = cullWhileDragging ? false : (clipping == UIDrawCall.Clipping.None) || (Application.isPlaying && mCullTime > mUpdateTime);
 #else
 		bool forceVisible = cullWhileDragging ? false : (clipping == UIDrawCall.Clipping.None) || (mCullTime > mUpdateTime);
 #endif
+		bool changed = false;
+
 		// Update all widgets
-		for (int i = 0, imax = mWidgets.size; i < imax; ++i)
+		for (int i = 0, imax = UIWidget.list.size; i < imax; ++i)
 		{
-			UIWidget w = mWidgets[i];
+			UIWidget w = UIWidget.list[i];
 
 			// If the widget is visible, update it
-			if (w.UpdateGeometry(this, forceVisible))
+			if (w.panel == this && w.enabled)
 			{
-				// We will need to refill this buffer
-				if (!mChanged.Contains(w.material))
-					 mChanged.Add(w.material);
+#if UNITY_EDITOR
+				// When an object is dragged from Project view to Scene view, its Z is...
+				// odd, to say the least. Force it if possible.
+				if (!Application.isPlaying)
+				{
+					Transform t = w.cachedTransform;
+
+					if (t.hideFlags != HideFlags.HideInHierarchy)
+					{
+						t = (t.parent != null && t.parent.hideFlags == HideFlags.HideInHierarchy) ?
+							t.parent : null;
+					}
+
+					if (t != null)
+					{
+						for (; ; )
+						{
+							if (t.parent == null) break;
+							if (t.parent.hideFlags == HideFlags.HideInHierarchy) t = t.parent;
+							else break;
+						}
+
+						if (t != null)
+						{
+							Vector3 pos = t.localPosition;
+							pos.x = Mathf.Round(pos.x);
+							pos.y = Mathf.Round(pos.y);
+							pos.z = 0f;
+
+							if (Vector3.SqrMagnitude(t.localPosition - pos) > 0.0001f)
+								t.localPosition = pos;
+						}
+					}
+				}
+#endif
+				if (!w.UpdateGeometry(forceVisible)) continue;
+
+				changed = true;
+				
+				if (!mRebuild)
+				{
+					if (w.drawCall != null)
+					{
+						w.drawCall.isDirty = true;
+					}
+					else
+					{
+						// Find an existing draw call, if possible
+						w.drawCall = GetExistingDrawCall(w.material, w.raycastDepth);
+							
+						if (w.drawCall != null)
+						{
+							w.drawCall.isDirty = true;
+						}
+						else
+						{
+							mRebuild = true;
+						}
+					}
+				}
 			}
 		}
-#endif
+
 		// Inform the changed event listeners
-		if (mChanged.size != 0 && onChange != null) onChange();
+		if (changed && onChange != null) onChange();
+	}
 
-		// If the depth has changed, we need to re-sort the widgets
-		if (mDepthChanged)
+	/// <summary>
+	/// Find a draw call if it already exists.
+	/// </summary>
+
+	UIDrawCall GetExistingDrawCall (Material mat, int depth)
+	{
+		for (int i = 0; i < UIDrawCall.list.size; ++i )
 		{
-			mDepthChanged = false;
-			mWidgets.Sort(UIWidget.CompareFunc);
+			UIDrawCall dc = UIDrawCall.list.buffer[i];
+
+			if (dc.depthStart <= depth && dc.depthEnd >= depth && dc.baseMaterial == mat)
+			{
+				return dc;
+			}
 		}
-
-		// Fill the draw calls for all of the changed materials
-		for (int i = 0, imax = mChanged.size; i < imax; ++i) Fill(mChanged.buffer[i]);
-
-		// Update the clipping rects
-		UpdateDrawcalls();
-		mChanged.Clear();
-#if OLD_UNITY
-		mRebuildAll = false;
-#endif
-#if UNITY_EDITOR
-		mScreenSize = new Vector2(Screen.width, Screen.height);
-#endif
+		return null;
 	}
 
 	/// <summary>
@@ -1109,76 +853,15 @@ public class UIPanel : MonoBehaviour
 
 	public void Refresh ()
 	{
-		UIWidget[] wd = GetComponentsInChildren<UIWidget>();
-		for (int i = 0, imax = wd.Length; i < imax; ++i) wd[i].Update();
-		LateUpdate();
+		mRebuild = true;
+		if (list.size > 0) list[0].LateUpdate();
 	}
-
-#if UNITY_EDITOR
-
-	// This is necessary because Screen.height inside OnDrawGizmos will return the size of the Scene window,
-	// and we need the size of the game window in order to draw the bounds properly.
-	int mScreenHeight = 720;
-	void Update () { mScreenHeight = Screen.height; }
-
-	/// <summary>
-	/// Draw a visible pink outline for the clipped area.
-	/// </summary>
-
-	void OnDrawGizmos ()
-	{
-		if (mDebugInfo == DebugInfo.Gizmos)
-		{
-			bool clip = (mClipping != UIDrawCall.Clipping.None);
-			Vector2 size = clip ? new Vector2(mClipRange.z, mClipRange.w) : Vector2.zero;
-
-			GameObject go = UnityEditor.Selection.activeGameObject;
-			bool selected = (go != null) && (NGUITools.FindInParents<UIPanel>(go) == this);
-
-			if (selected || clip || (mCam != null && mCam.isOrthoGraphic))
-			{
-				if (size.x == 0f) size.x = mScreenSize.x;
-				if (size.y == 0f) size.y = mScreenSize.y;
-
-				if (!clip)
-				{
-					UIRoot root = NGUITools.FindInParents<UIRoot>(cachedGameObject);
-					if (root != null) size *= root.GetPixelSizeAdjustment(mScreenHeight);
-				}
-
-				Transform t = clip ? transform : (mCam != null ? mCam.transform : null);
-
-				if (t != null)
-				{
-					Vector3 pos = new Vector2(mClipRange.x, mClipRange.y);
-
-					Gizmos.matrix = t.localToWorldMatrix;
-
-					if (go != cachedGameObject)
-					{
-						Gizmos.color = clip ? Color.magenta : new Color(0.5f, 0f, 0.5f);
-						Gizmos.DrawWireCube(pos, size);
-
-						// Make the panel selectable
-						//Gizmos.color = Color.clear;
-						//Gizmos.DrawCube(pos, size);
-					}
-					else
-					{
-						Gizmos.color = Color.green;
-						Gizmos.DrawWireCube(pos, size);
-					}
-				}
-			}
-		}
-	}
-#endif
 
 	/// <summary>
 	/// Calculate the offset needed to be constrained within the panel's bounds.
 	/// </summary>
 
-	public Vector3 CalculateConstrainOffset (Vector2 min, Vector2 max)
+	public virtual Vector3 CalculateConstrainOffset (Vector2 min, Vector2 max)
 	{
 		float offsetX = clipRange.z * 0.5f;
 		float offsetY = clipRange.w * 0.5f;
@@ -1276,7 +959,43 @@ public class UIPanel : MonoBehaviour
 
 		if (createIfMissing && panel == null && trans != origin)
 		{
-			panel = trans.gameObject.AddComponent<UIPanel>();
+			mRebuild = true;
+
+			UIRoot root = NGUITools.FindInParents<UIRoot>(origin.gameObject);
+
+			if (root == null && UIRoot.list.Count > 0)
+				root = UIRoot.list[0];
+
+			if (root == null)
+			{
+				GameObject go = new GameObject("UI Root");
+				go.layer = origin.gameObject.layer;
+				root = go.AddComponent<UIRoot>();
+			}
+
+			panel = root.GetComponentInChildren<UIPanel>();
+
+			if (panel == null)
+			{
+				Camera cam = NGUITools.AddChild<Camera>(root.gameObject);
+				cam.gameObject.AddComponent<UICamera>();
+				cam.orthographic = true;
+				cam.orthographicSize = 1;
+				cam.nearClipPlane = -10;
+				cam.farClipPlane = 10;
+				cam.clearFlags = (Camera.main != null) ? CameraClearFlags.Depth : CameraClearFlags.Color;
+				cam.cullingMask = (1 << root.gameObject.layer);
+
+				if (Camera.main != null)
+					Camera.main.cullingMask = (Camera.main.cullingMask & (~cam.cullingMask));
+
+				UIAnchor anch = NGUITools.AddChild<UIAnchor>(cam.gameObject);
+				panel = NGUITools.AddChild<UIPanel>(anch.gameObject);
+			}
+
+			trans.parent = panel.transform;
+			trans.localScale = Vector3.one;
+			trans.localPosition = Vector3.zero;
 			SetChildLayer(panel.cachedTransform, panel.cachedGameObject.layer);
 		}
 		return panel;
@@ -1287,4 +1006,234 @@ public class UIPanel : MonoBehaviour
 	/// </summary>
 
 	static public UIPanel Find (Transform trans) { return Find(trans, true); }
+
+	/// <summary>
+	/// Fill the geometry fully, processing all widgets and re-creating all draw calls.
+	/// </summary>
+
+	static public void Fill ()
+	{
+		for (int i = UIDrawCall.list.size; i > 0; )
+		{
+			UIDrawCall draw = UIDrawCall.list[--i];
+			if (draw != null) NGUITools.DestroyImmediate(draw.gameObject);
+		}
+
+		int index = 0;
+		UIPanel pan = null;
+		Material mat = null;
+		Texture tex = null;
+		Shader sdr = null;
+		UIDrawCall dc = null;
+
+		for (int i = 0; i < UIWidget.list.size; )
+		{
+			UIWidget w = UIWidget.list[i];
+
+			if (w == null)
+			{
+				UIWidget.list.RemoveAt(i);
+				continue;
+			}
+
+			if (w.isVisible && w.hasVertices)
+			{
+				UIPanel pn = w.panel;
+				Material mt = w.material;
+				Texture tx = w.mainTexture;
+				Shader sd = w.shader;
+
+				if (pan != pn || mat != mt || tex != tx || sdr != sd)
+				{
+					if (pan != null && mVerts.size != 0)
+					{
+						pan.SubmitDrawCall(dc);
+						dc = null;
+					}
+
+					pan = pn;
+					mat = mt;
+					tex = tx;
+					sdr = sd;
+				}
+
+				if (pan != null && (mat != null || sdr != null || tex != null))
+				{
+					if (dc == null)
+					{
+						dc = pan.GetDrawCall(index++, mat, tex, sdr);
+						dc.depthStart = w.raycastDepth;
+						dc.depthEnd = dc.depthStart;
+						dc.panel = pan;
+					}
+					else
+					{
+						int rd = w.raycastDepth;
+						if (rd < dc.depthStart) dc.depthStart = rd;
+						if (rd > dc.depthEnd) dc.depthEnd = rd;
+					}
+
+					w.drawCall = dc;
+
+					if (pan.generateNormals) w.WriteToBuffers(mVerts, mUvs, mCols, mNorms, mTans);
+					else w.WriteToBuffers(mVerts, mUvs, mCols, null, null);
+				}
+			}
+			else w.drawCall = null;
+			++i;
+		}
+		if (mVerts.size != 0) pan.SubmitDrawCall(dc);
+	}
+
+	/// <summary>
+	/// Submit the draw call using the current geometry.
+	/// </summary>
+
+	void SubmitDrawCall (UIDrawCall dc)
+	{
+		dc.Set(mVerts, generateNormals ? mNorms : null, generateNormals ? mTans : null, mUvs, mCols);
+		mVerts.Clear();
+		mNorms.Clear();
+		mTans.Clear();
+		mUvs.Clear();
+		mCols.Clear();
+	}
+
+	/// <summary>
+	/// Fill the geometry for the specified draw call.
+	/// </summary>
+
+	static bool Fill (UIDrawCall dc)
+	{
+		if (dc != null)
+		{
+			dc.isDirty = false;
+
+			for (int i = 0; i < UIWidget.list.size; )
+			{
+				UIWidget w = UIWidget.list[i];
+
+				if (w == null)
+				{
+					UIWidget.list.RemoveAt(i);
+					continue;
+				}
+
+				if (w.drawCall == dc)
+				{
+					if (w.isVisible && w.hasVertices)
+					{
+						if (dc.manager.generateNormals) w.WriteToBuffers(mVerts, mUvs, mCols, mNorms, mTans);
+						else w.WriteToBuffers(mVerts, mUvs, mCols, null, null);
+					}
+					else w.drawCall = null;
+				}
+				++i;
+			}
+
+			if (mVerts.size != 0)
+			{
+				dc.Set(mVerts, dc.manager.generateNormals ? mNorms : null, dc.manager.generateNormals ? mTans : null, mUvs, mCols);
+				mVerts.Clear();
+				mNorms.Clear();
+				mTans.Clear();
+				mUvs.Clear();
+				mCols.Clear();
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/// <summary>
+	/// Panel's size -- which is either the clipping rect, or the screen dimensions.
+	/// </summary>
+
+	Vector2 GetSize ()
+	{
+		bool clip = (mClipping != UIDrawCall.Clipping.None);
+#if UNITY_EDITOR
+		Vector2 size = clip ? new Vector2(mClipRange.z, mClipRange.w) : new Vector2(mScreenWidth, mScreenHeight);
+#else
+		Vector2 size = clip ? new Vector2(mClipRange.z, mClipRange.w) : new Vector2(Screen.width, Screen.height);
+#endif
+		if (!clip)
+		{
+			UIRoot root = NGUITools.FindInParents<UIRoot>(cachedGameObject);
+#if UNITY_EDITOR
+			if (root != null) size *= root.GetPixelSizeAdjustment(mScreenHeight);
+#else
+			if (root != null) size *= root.GetPixelSizeAdjustment(Screen.height);
+#endif
+		}
+		return size;
+	}
+
+#if UNITY_EDITOR
+
+	int mScreenWidth = 1280;
+	int mScreenHeight = 720;
+	
+	void Update ()
+	{
+		mScreenWidth = Screen.width;
+		mScreenHeight = Screen.height;
+	}
+
+	/// <summary>
+	/// Draw a visible pink outline for the clipped area.
+	/// </summary>
+
+	void OnDrawGizmos ()
+	{
+		if (mCam == null) return;
+
+		Vector2 size = GetSize();
+		GameObject go = UnityEditor.Selection.activeGameObject;
+		bool selected = (go != null) && (NGUITools.FindInParents<UIPanel>(go) == this);
+		bool clip = (mClipping != UIDrawCall.Clipping.None);
+
+		Transform t = clip ? transform : (mCam != null ? mCam.transform : null);
+
+		if (t != null)
+		{
+			Vector3 pos = clip ? new Vector3(mClipRange.x, mClipRange.y) : Vector3.zero;
+			Gizmos.matrix = t.localToWorldMatrix;
+
+			if (selected)
+			{
+				if (mClipping == UIDrawCall.Clipping.SoftClip)
+				{
+					if (UnityEditor.Selection.activeGameObject == gameObject)
+					{
+						Gizmos.color = new Color(1f, 0f, 0.5f);
+						size.x -= mClipSoftness.x * 2f;
+						size.y -= mClipSoftness.y * 2f;
+						Gizmos.DrawWireCube(pos, size);
+					}
+					else
+					{
+						Gizmos.color = new Color(0.5f, 0f, 0.5f);
+						Gizmos.DrawWireCube(pos, size);
+
+						Gizmos.color = new Color(1f, 0f, 0.5f);
+						size.x -= mClipSoftness.x * 2f;
+						size.y -= mClipSoftness.y * 2f;
+						Gizmos.DrawWireCube(pos, size);
+					}
+				}
+				else
+				{
+					Gizmos.color = new Color(1f, 0f, 0.5f);
+					Gizmos.DrawWireCube(pos, size);
+				}
+			}
+			else
+			{
+				Gizmos.color = new Color(0.5f, 0f, 0.5f);
+				Gizmos.DrawWireCube(pos, size);
+			}
+		}
+	}
+#endif
 }
