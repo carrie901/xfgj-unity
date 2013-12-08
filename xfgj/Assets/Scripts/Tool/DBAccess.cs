@@ -125,7 +125,45 @@ public class DBAccess{
         return ExecuteQuery(sb.ToString());
     }
 
-    public SqliteDataReader Delete(string tableName, string whereArgs) {
+    public SqliteDataReader ReplaceInBatch (string tableName, string[] cols, object[,] values) {
+        if (tableName == null || cols == null || values == null || values.Length % cols.Length != 0) {
+            throw new SqliteException("param error");
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.Append("REPLACE INTO ");
+        sb.Append(tableName);
+        sb.Append("(");
+        for (int i = 0; i < cols.Length; ++i) {
+            if (i > 0) {
+                sb.Append(", ");
+            }
+            sb.Append(cols[i]);
+        }
+        sb.Append(") VALUES ");
+        for (int i = 0; i < values.Length / cols.Length; ++i) {
+            if (i > 0) {
+                sb.Append(",");
+            }
+            sb.Append("(");
+            for (int j = 0; j < cols.Length; ++j) {
+                if (j > 0) {
+                    sb.Append(", ");
+                }
+                if (values[i, j] is String) {
+                    sb.Append("'");
+                    sb.Append(values[i, j]);
+                    sb.Append("'");
+                }
+                else {
+                    sb.Append(values[i, j]);
+                }
+            }
+            sb.Append(")");
+        }
+        return ExecuteQuery(sb.ToString());
+    }
+
+    public SqliteDataReader Delete (string tableName, string whereArgs) {
         if (tableName == null) {
             throw new SqliteException("param error");
         }

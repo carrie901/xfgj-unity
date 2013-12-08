@@ -14,7 +14,7 @@ public class ViewController : MonoBehaviour {
 
         //GameObject panel = GameObject.Find("UI Root (2D)/Camera/Anchor/Panel");
         MainViewController mainController = new MainViewController();
-        mainController.generateView();
+        mainController.Show();
     }
 
     void ButtonClick (GameObject gameObject) {

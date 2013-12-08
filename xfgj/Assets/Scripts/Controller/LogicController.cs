@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Data;
-using System.Collections;
+using System.Collections.Generic;
 using Mono.Data.Sqlite;
 
 public class LogicController {
@@ -38,9 +38,9 @@ public class LogicController {
         }
         DBAccess dbAccess = new DBAccess();
         dbAccess.OpenDB(Config.DB_PATH);
-        string[] cols = new string[] {Category.FIELD_CID, Category.FIELD_NAME, 
-                                      Category.FIELD_PARENT_CID, Category.FIELD_IS_PARENT};
-        object[] values = new object[] {category.cid, category.name, category.parentCid, category.isParent ? 1 : 0};
+        string[] cols = new string[] {Category.FIELD_NAME, Category.FIELD_PARENT_CID,
+                                      Category.FIELD_IS_PARENT};
+        object[] values = new object[] {category.name, category.parentCid, category.isParent ? 1 : 0};
         string whereArgs = "WHERE " + Category.FIELD_CID + "=" + category.cid;
         dbAccess.Update(Category.TABLE_NAME, cols, values, whereArgs);
         dbAccess.CloseSqlConnection();
@@ -84,10 +84,10 @@ public class LogicController {
         dbAccess.OpenDB(Config.DB_PATH);
         string[] cols = new string[] {Item.FIELD_NUMIID, Item.FIELD_TITLE, Item.FIELD_DETAIL_URL, Item.FIELD_CID,
                                       Item.FIELD_PIC_URL, Item.FIELD_PRICE, Item.FIELD_LIST_TIME, Item.FIELD_DELIST_TIME,
-                                      Item.FIELD_PRODUCT_ID, Item.FIELD_SEQ};
+                                      Item.FIELD_PRODUCT_ID, Item.FIELD_SEQ, Item.FIELD_MODIFIED};
         object[] values = new object[] {item.numIid, item.title, item.detailUrl, item.cid, item.picUrl, item.price,
-                                        string.Format("{0:G}",item.listTime), string.Format("{0:G}",item.delistTime), 
-                                        item.productId, item.seq};
+                                        StringUtil.DateTimeToString(item.listTime), StringUtil.DateTimeToString(item.delistTime),
+                                        item.productId, item.seq, StringUtil.DateTimeToString(item.modified)};
         dbAccess.Insert(Item.TABLE_NAME, cols, values);
         dbAccess.CloseSqlConnection();
     }
@@ -98,12 +98,12 @@ public class LogicController {
         }
         DBAccess dbAccess = new DBAccess();
         dbAccess.OpenDB(Config.DB_PATH);
-        string[] cols = new string[] {Item.FIELD_NUMIID, Item.FIELD_TITLE, Item.FIELD_DETAIL_URL, Item.FIELD_CID,
+        string[] cols = new string[] {Item.FIELD_TITLE, Item.FIELD_DETAIL_URL, Item.FIELD_CID,
                                       Item.FIELD_PIC_URL, Item.FIELD_PRICE, Item.FIELD_LIST_TIME, Item.FIELD_DELIST_TIME,
-                                      Item.FIELD_PRODUCT_ID, Item.FIELD_SEQ};
-        object[] values = new object[] {item.numIid, item.title, item.detailUrl, item.cid, item.picUrl, item.price,
+                                      Item.FIELD_PRODUCT_ID, Item.FIELD_SEQ, Item.FIELD_MODIFIED};
+        object[] values = new object[] {item.title, item.detailUrl, item.cid, item.picUrl, item.price,
                                         StringUtil.DateTimeToString(item.listTime), StringUtil.DateTimeToString(item.delistTime),  
-                                        item.productId, item.seq};
+                                        item.productId, item.seq, StringUtil.DateTimeToString(item.modified)};
         string whereArgs = "WHERE " + Item.FIELD_NUMIID + "=" + item.numIid;
         dbAccess.Update(Item.TABLE_NAME, cols, values, whereArgs);
         dbAccess.CloseSqlConnection();
@@ -152,8 +152,10 @@ public class LogicController {
         }
         DBAccess dbAccess = new DBAccess();
         dbAccess.OpenDB(Config.DB_PATH);
-        string[] cols = new string[] {Producer.FIELD_PRODUCER_ID, Producer.FIELD_NAME, Producer.FIELD_DETAILS};
-        object[] values = new object[] {producer.producerId, producer.name, producer.details};
+        string[] cols = new string[] {Producer.FIELD_PRODUCER_ID, Producer.FIELD_NAME,
+                                      Producer.FIELD_DETAILS, Producer.FIELD_MODIFIED};
+        object[] values = new object[] {producer.producerId, producer.name, producer.details,
+                                        StringUtil.DateTimeToString(producer.modified)};
         dbAccess.Insert(Producer.TABLE_NAME, cols, values);
         dbAccess.CloseSqlConnection();
     }
@@ -164,8 +166,10 @@ public class LogicController {
         }
         DBAccess dbAccess = new DBAccess();
         dbAccess.OpenDB(Config.DB_PATH);
-        string[] cols = new string[] {Producer.FIELD_PRODUCER_ID, Producer.FIELD_NAME, Producer.FIELD_DETAILS};
-        object[] values = new object[] {producer.producerId, producer.name, producer.details};
+        string[] cols = new string[] {Producer.FIELD_NAME, Producer.FIELD_DETAILS,
+                                      Producer.FIELD_MODIFIED};
+        object[] values = new object[] {producer.name, producer.details,
+                                        StringUtil.DateTimeToString(producer.modified)};
         string whereArgs = "WHERE " + Producer.FIELD_PRODUCER_ID + "=" + producer.producerId;
         dbAccess.Update(Producer.TABLE_NAME, cols, values, whereArgs);
         dbAccess.CloseSqlConnection();
@@ -207,10 +211,13 @@ public class LogicController {
         }
         DBAccess dbAccess = new DBAccess();
         dbAccess.OpenDB(Config.DB_PATH);
-        string[] cols = new string[] {Product.FIELD_PRODUCT_ID, Product.FIELD_PRODUCER_ID, Product.FIELD_NAME,
-                                      Product.FIELD_CID, Product.FIELD_DETAILS, Product.FIELD_PIC_URL, Product.FIELD_SIZE};
+        string[] cols = new string[] {Product.FIELD_PRODUCT_ID, Product.FIELD_PRODUCER_ID,
+                                      Product.FIELD_NAME, Product.FIELD_CID, Product.FIELD_DETAILS,
+                                      Product.FIELD_PIC_URL, Product.FIELD_SIZE,
+                                      Product.FIELD_MODIFIED};
         object[] values = new object[] {product.productId, product.producerId, product.name, product.cid,
-                                        product.details, product.picUrl, product.size};
+                                        product.details, product.picUrl, product.size,
+                                        StringUtil.DateTimeToString(product.modified)};
         dbAccess.Insert(Product.TABLE_NAME, cols, values);
         dbAccess.CloseSqlConnection();
     }
@@ -221,10 +228,12 @@ public class LogicController {
         }
         DBAccess dbAccess = new DBAccess();
         dbAccess.OpenDB(Config.DB_PATH);
-        string[] cols = new string[] {Product.FIELD_PRODUCT_ID, Product.FIELD_PRODUCER_ID, Product.FIELD_NAME,
-                                      Product.FIELD_CID, Product.FIELD_DETAILS, Product.FIELD_PIC_URL, Product.FIELD_SIZE};
-        object[] values = new object[] {product.productId, product.producerId, product.name, product.cid,
-                                        product.details, product.picUrl, product.size};
+        string[] cols = new string[] {Product.FIELD_PRODUCER_ID, Product.FIELD_NAME,
+                                      Product.FIELD_CID, Product.FIELD_DETAILS, Product.FIELD_PIC_URL,
+                                      Product.FIELD_SIZE, Product.FIELD_MODIFIED};
+        object[] values = new object[] {product.producerId, product.name, product.cid,
+                                        product.details, product.picUrl, product.size,
+                                        StringUtil.DateTimeToString(product.modified)};
         string whereArgs = "WHERE " + Product.FIELD_PRODUCT_ID + "=" + product.productId;
         dbAccess.Update(Product.TABLE_NAME, cols, values, whereArgs);
         dbAccess.CloseSqlConnection();
@@ -271,8 +280,9 @@ public class LogicController {
         DBAccess dbAccess = new DBAccess();
         dbAccess.OpenDB(Config.DB_PATH);
         string[] cols = new string[] {Scene.FIELD_SCENE_ID, Scene.FIELD_NAME, Scene.FIELD_TYPE_ID, 
-                                      Scene.FIELD_PIC_URL, Scene.FIELD_DETAILS};
-        object[] values = new object[] {scene.sceneId, scene.name, scene.typeId, scene.picUrl, scene.details};
+                                      Scene.FIELD_PIC_URL, Scene.FIELD_DETAILS, Scene.FIELD_MODIFIED};
+        object[] values = new object[] {scene.sceneId, scene.name, scene.typeId,
+                                        scene.picUrl, scene.details, StringUtil.DateTimeToString(scene.modified)};
         dbAccess.Insert(Scene.TABLE_NAME, cols, values);
         dbAccess.CloseSqlConnection();
     }
@@ -283,11 +293,33 @@ public class LogicController {
         }
         DBAccess dbAccess = new DBAccess();
         dbAccess.OpenDB(Config.DB_PATH);
-        string[] cols = new string[] {Scene.FIELD_SCENE_ID, Scene.FIELD_NAME, Scene.FIELD_TYPE_ID, 
-                                      Scene.FIELD_PIC_URL, Scene.FIELD_DETAILS};
-        object[] values = new object[] {scene.sceneId, scene.name, scene.typeId, scene.picUrl, scene.details};
+        string[] cols = new string[] {Scene.FIELD_NAME, Scene.FIELD_TYPE_ID,
+                                      Scene.FIELD_PIC_URL, Scene.FIELD_DETAILS, Scene.FIELD_MODIFIED};
+        object[] values = new object[] {scene.name, scene.typeId,
+                                        scene.picUrl, scene.details, StringUtil.DateTimeToString(scene.modified)};
         string whereArgs = "WHERE " + Scene.FIELD_SCENE_ID + "=" + scene.sceneId;
         dbAccess.Update(Scene.TABLE_NAME, cols, values, whereArgs);
+        dbAccess.CloseSqlConnection();
+    }
+
+    public static void ReplaceScenes (List<Scene> list) {
+        if (list == null || list.Count == 0) {
+            throw new SqliteException("list can't be empty");
+        }
+        DBAccess dbAccess = new DBAccess();
+        dbAccess.OpenDB(Config.DB_PATH);
+        string[] cols = new string[] {Scene.FIELD_SCENE_ID, Scene.FIELD_NAME, Scene.FIELD_TYPE_ID, 
+                                      Scene.FIELD_PIC_URL, Scene.FIELD_DETAILS, Scene.FIELD_MODIFIED};
+        object[,] values = new object[list.Count, cols.Length];
+        for (int i = 0; i < list.Count; ++i) {
+            values[i, 0] = list[i].sceneId;
+            values[i, 1] = list[i].name;
+            values[i, 2] = list[i].typeId;
+            values[i, 3] = list[i].picUrl;
+            values[i, 4] = list[i].details;
+            values[i, 5] = StringUtil.DateTimeToString(list[i].modified);
+        }
+        dbAccess.ReplaceInBatch(Scene.TABLE_NAME, cols, values);
         dbAccess.CloseSqlConnection();
     }
     
@@ -320,6 +352,45 @@ public class LogicController {
         dbAccess.CloseSqlConnection();
         return scene;
     }
+
+    public static List<Scene> GetScenesBySceneType(int sceneTypeId) {
+        DBAccess dbAccess = new DBAccess();
+        dbAccess.OpenDB(Config.DB_PATH);
+        string whereArgs = "WHERE " + Scene.FIELD_TYPE_ID + "=" + sceneTypeId;
+        SqliteDataReader reader = dbAccess.Query(Scene.TABLE_NAME, "*", whereArgs);
+        List<Scene> sceneList = new List<Scene>();
+        while (reader.Read()) {
+            sceneList.Add(new Scene(reader.GetInt32(reader.GetOrdinal(Scene.FIELD_SCENE_ID)),
+                                    reader.GetString(reader.GetOrdinal(Scene.FIELD_NAME)),
+                                    reader.GetInt32(reader.GetOrdinal(Scene.FIELD_TYPE_ID)),
+                                    reader.GetString(reader.GetOrdinal(Scene.FIELD_PIC_URL)),
+                                    reader.GetString(reader.GetOrdinal(Scene.FIELD_DETAILS)),
+                                    StringUtil.StringToDateTime(reader.GetString(reader.GetOrdinal(Scene.FIELD_MODIFIED)))));
+        }
+        reader.Close();
+        dbAccess.CloseSqlConnection();
+        return sceneList;
+    }
+
+    public static Scene GetLatestMofifiedScene () {
+        DBAccess dbAccess = new DBAccess();
+        dbAccess.OpenDB(Config.DB_PATH);
+        string orderArgs = "ORDER BY " + Scene.FIELD_MODIFIED + " DESC";
+        string limitArgs = "LIMIT 1";
+        SqliteDataReader reader = dbAccess.Query(Scene.TABLE_NAME, "*", null, orderArgs, limitArgs);
+        Scene scene = null;
+        while (reader.Read()) {
+            scene = new Scene(reader.GetInt32(reader.GetOrdinal(Scene.FIELD_SCENE_ID)),
+                                    reader.GetString(reader.GetOrdinal(Scene.FIELD_NAME)),
+                                    reader.GetInt32(reader.GetOrdinal(Scene.FIELD_TYPE_ID)),
+                                    reader.GetString(reader.GetOrdinal(Scene.FIELD_PIC_URL)),
+                                    reader.GetString(reader.GetOrdinal(Scene.FIELD_DETAILS)),
+                                    StringUtil.StringToDateTime(reader.GetString(reader.GetOrdinal(Scene.FIELD_MODIFIED))));
+        }
+        reader.Close();
+        dbAccess.CloseSqlConnection();
+        return scene;
+    }
     #endregion
     
     #region SceneType operation
@@ -329,8 +400,9 @@ public class LogicController {
         }
         DBAccess dbAccess = new DBAccess();
         dbAccess.OpenDB(Config.DB_PATH);
-        string[] cols = new string[] {SceneType.FIELD_TYPE_ID, SceneType.FIELD_NAME};
-        object[] values = new object[] {sceneType.typeId, sceneType.name};
+        string[] cols = new string[] {SceneType.FIELD_TYPE_ID, SceneType.FIELD_NAME,
+                                      SceneType.FIELD_MODIFIED};
+        object[] values = new object[] {sceneType.typeId, sceneType.name, StringUtil.DateTimeToString(sceneType.modified)};
         dbAccess.Insert(SceneType.TABLE_NAME, cols, values);
         dbAccess.CloseSqlConnection();
     }
@@ -341,8 +413,8 @@ public class LogicController {
         }
         DBAccess dbAccess = new DBAccess();
         dbAccess.OpenDB(Config.DB_PATH);
-        string[] cols = new string[] {SceneType.FIELD_TYPE_ID, SceneType.FIELD_NAME};
-        object[] values = new object[] {sceneType.typeId, sceneType.name};
+        string[] cols = new string[] {SceneType.FIELD_NAME, SceneType.FIELD_MODIFIED};
+        object[] values = new object[] {sceneType.name, StringUtil.DateTimeToString(sceneType.modified)};
         string whereArgs = "WHERE " + SceneType.FIELD_TYPE_ID + "=" + sceneType.typeId;
         dbAccess.Update(SceneType.TABLE_NAME, cols, values, whereArgs);
         dbAccess.CloseSqlConnection();

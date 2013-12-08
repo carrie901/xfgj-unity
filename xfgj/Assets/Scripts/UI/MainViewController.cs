@@ -1,5 +1,6 @@
 using UnityEngine;
 using System;
+using System.Collections.Generic;
 
 public class MainViewController {
 
@@ -24,35 +25,57 @@ public class MainViewController {
         }
     }
 
+    #region public methods
     /*
      * item size 350*350
      * pos (-46, 191), (318, 191), (-46, -172), (318, -172)
      */
-    public void generateView() {
+    public void Show () {
         Debug.Log("generate view");
-        GameObject sceneItem = Resources.Load("Prefabs/scene_item") as GameObject;
-        for (int i = 0; i < 8; ++i) {
-            NGUITools.AddChild(table, sceneItem);
-        }
-        tableComp.Reposition();
+        ToggleLoading();
+        GenerateView();
+        SyncScenesCommand cmd = new SyncScenesCommand(new UIDelegate.Update(RefreshList));
+        cmd.execute();
     }
+    #endregion
 
-    void DragFinished () {
-        Debug.Log("DragFinished function called");
-        if (Math.Abs(scrollPanel.transform.localPosition.y - scrollComp.bounds.extents.y) < 5) {
-            Debug.Log("scroll to the bottom");
-            if (loadingComp != null) {
+    #region private methods
+    private void ToggleLoading () {
+        if (loadingComp != null) {
+            if (loadingComp.depth == -1) {
                 loadingComp.depth = NGUITools.CalculateNextDepth(root);
-                ApiController.Authorize("", new ApiCaller.ResponseHandle(callback));
+            }
+            else {
+                loadingComp.depth = -1;
             }
         }
     }
 
-    void OnReposition () {
+    private void GenerateView () {
+        table.transform.DetachChildren();
+        List<Scene> scenes = LogicController.GetScenesBySceneType(100001);
+        GameObject sceneItem = Resources.Load("Prefabs/scene_item") as GameObject;
+        for (int i = 0; i < scenes.Count; ++i) {
+            NGUITools.AddChild(table, sceneItem);
+        }
+        tableComp.Reposition();
+    }
+    #endregion
+
+    #region View delegate
+    private void DragFinished () {
+        Debug.Log("DragFinished function called");
+        if (Math.Abs(scrollPanel.transform.localPosition.y - scrollComp.bounds.extents.y) < 5) {
+            Debug.Log("scroll to the bottom");
+            ToggleLoading();
+        }
+    }
+
+    private void OnReposition () {
         for (int i = 0; i < table.transform.childCount; ++i) {
             Transform t = table.transform.GetChild(i);
             int row = i / 2;
-            if (i % 2 == 0) {
+            if (i % 2 != 0) {
                 t.localPosition = new Vector3(182, -row * 364, 0);
             }
             else {
@@ -61,8 +84,17 @@ public class MainViewController {
         }
     }
 
-    void callback(string res) {
-        loadingComp.depth = -1;
+    private void RefreshList (bool result) {
+        if (result) {
+            GenerateView();
+        }
+        ToggleLoading();
     }
+
+    #endregion
+
+    #region api callback
+
+    #endregion
 }
 

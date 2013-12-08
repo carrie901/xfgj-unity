@@ -31,12 +31,25 @@ public class ApiController {
         obj.SendMessage("GetScene", rp, SendMessageOptions.RequireReceiver);
     }
 
-    public static void GetScenes (string token, int? sceneTypeId, ApiCaller.ResponseHandle handle) {
+    public static void GetScenes (string token, int? sceneTypeId,
+                                  ApiCaller.ResponseHandle handle) {
         ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.TOKEN, token);
         if (sceneTypeId != null) {
             rp.data.Add(Param.SCENE_TYPE_ID, "" + sceneTypeId);
+        }
+        rp.callback = handle;
+        obj.SendMessage("GetScenes", rp, SendMessageOptions.RequireReceiver);
+    }
+
+    public static void GetAllScenes (string token, DateTime? modified,
+                                     ApiCaller.ResponseHandle handle) {
+        ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
+        rp.data = new Dictionary<string, string>();
+        rp.data.Add(Param.TOKEN, token);
+        if (modified != null) {
+            rp.data.Add(Param.LATEST_MODIFIED, StringUtil.DateTimeToString((DateTime)modified));
         }
         rp.callback = handle;
         obj.SendMessage("GetScenes", rp, SendMessageOptions.RequireReceiver);
