@@ -26,8 +26,11 @@ public class LogicController {
         DBAccess dbAccess = new DBAccess();
         dbAccess.OpenDB(Config.DB_PATH);
         string[] cols = new string[] {Category.FIELD_CID, Category.FIELD_NAME, 
-                                      Category.FIELD_PARENT_CID, Category.FIELD_IS_PARENT};
-        object[] values = new object[] {category.cid, category.name, category.parentCid, category.isParent ? 1 : 0};
+                                      Category.FIELD_PARENT_CID, Category.FIELD_IS_PARENT,
+                                      Category.FIELD_USABLE, Category.FIELD_MODIFIED};
+        object[] values = new object[] {category.cid, category.name, category.parentCid,
+                                        category.isParent ? 1 : 0, category.usable ? 1 : 0,
+                                        StringUtil.DateTimeToString(category.modified)};
         dbAccess.Insert(Category.TABLE_NAME, cols, values);
         dbAccess.CloseSqlConnection();
     }
@@ -39,10 +42,33 @@ public class LogicController {
         DBAccess dbAccess = new DBAccess();
         dbAccess.OpenDB(Config.DB_PATH);
         string[] cols = new string[] {Category.FIELD_NAME, Category.FIELD_PARENT_CID,
-                                      Category.FIELD_IS_PARENT};
-        object[] values = new object[] {category.name, category.parentCid, category.isParent ? 1 : 0};
+                                      Category.FIELD_IS_PARENT, Category.FIELD_USABLE,
+                                      Category.FIELD_MODIFIED};
+        object[] values = new object[] {category.name, category.parentCid, category.isParent ? 1 : 0,
+                                        category.usable ? 1 : 0, StringUtil.DateTimeToString(category.modified)};
         string whereArgs = "WHERE " + Category.FIELD_CID + "=" + category.cid;
         dbAccess.Update(Category.TABLE_NAME, cols, values, whereArgs);
+        dbAccess.CloseSqlConnection();
+    }
+
+    public static void ReplaceCategorys (List<Category> list) {
+        if (list == null || list.Count == 0) {
+            throw new SqliteException("list can't be empty");
+        }
+        DBAccess dbAccess = new DBAccess();
+        dbAccess.OpenDB(Config.DB_PATH);
+        string[] cols = new string[] {Category.FIELD_CID, Category.FIELD_NAME, Category.FIELD_PARENT_CID,
+                                      Category.FIELD_IS_PARENT, Category.FIELD_USABLE, Category.FIELD_MODIFIED};
+        object[,] values = new object[list.Count, cols.Length];
+        for (int i = 0; i < list.Count; ++i) {
+            values[i, 0] = list[i].cid;
+            values[i, 1] = list[i].name;
+            values[i, 2] = list[i].parentCid;
+            values[i, 3] = list[i].isParent ? 1 : 0;
+            values[i, 4] = list[i].usable ? 1 : 0;
+            values[i, 5] = StringUtil.DateTimeToString(list[i].modified);
+        }
+        dbAccess.ReplaceInBatch(Category.TABLE_NAME, cols, values);
         dbAccess.CloseSqlConnection();
     }
     
@@ -67,7 +93,9 @@ public class LogicController {
             category = new Category(reader.GetInt32(reader.GetOrdinal(Category.FIELD_CID)),
                                     reader.GetString(reader.GetOrdinal(Category.FIELD_NAME)),
                                     reader.GetInt32(reader.GetOrdinal(Category.FIELD_PARENT_CID)),
-                                    reader.GetBoolean(reader.GetOrdinal(Category.FIELD_IS_PARENT)));
+                                    reader.GetBoolean(reader.GetOrdinal(Category.FIELD_IS_PARENT)),
+                                    reader.GetBoolean(reader.GetOrdinal(Category.FIELD_USABLE)),
+                                    StringUtil.StringToDateTime(reader.GetString(reader.GetOrdinal(Category.FIELD_MODIFIED))));
         }
         reader.Close();
         dbAccess.CloseSqlConnection();
@@ -417,6 +445,23 @@ public class LogicController {
         object[] values = new object[] {sceneType.name, StringUtil.DateTimeToString(sceneType.modified)};
         string whereArgs = "WHERE " + SceneType.FIELD_TYPE_ID + "=" + sceneType.typeId;
         dbAccess.Update(SceneType.TABLE_NAME, cols, values, whereArgs);
+        dbAccess.CloseSqlConnection();
+    }
+
+    public static void ReplaceSceneTypes (List<SceneType> list) {
+        if (list == null || list.Count == 0) {
+            throw new SqliteException("list can't be empty");
+        }
+        DBAccess dbAccess = new DBAccess();
+        dbAccess.OpenDB(Config.DB_PATH);
+        string[] cols = new string[] {SceneType.FIELD_TYPE_ID, SceneType.FIELD_NAME, SceneType.FIELD_MODIFIED};
+        object[,] values = new object[list.Count, cols.Length];
+        for (int i = 0; i < list.Count; ++i) {
+            values[i, 0] = list[i].typeId;
+            values[i, 1] = list[i].name;
+            values[i, 2] = StringUtil.DateTimeToString(list[i].modified);
+        }
+        dbAccess.ReplaceInBatch(SceneType.TABLE_NAME, cols, values);
         dbAccess.CloseSqlConnection();
     }
     

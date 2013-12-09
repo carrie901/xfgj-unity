@@ -129,5 +129,27 @@ public class ApiCaller : MonoBehaviour {
         StartCoroutine(NetUtil.Get(Uri.EscapeUriString(url), rp.callback));
     }
 
+    /*
+     * required: token, cid
+     */
+    public void GetCategory (RequestParams rp) {
+        string url = Config.SERVER_URL + "/api/category/" + rp.data[Param.CID];
+        url += "?" + Param.TOKEN + "=" + rp.data[Param.TOKEN];
+        StartCoroutine(NetUtil.Get(Uri.EscapeUriString(url), rp.callback));
+    }
+
+    /*
+     * required: token
+     * optional: parent_cid
+     */
+    public void GetCategorys (RequestParams rp) {
+        string url = Config.SERVER_URL + "/api/categorys";
+        url += "?" + Param.TOKEN + "=" + rp.data[Param.TOKEN];
+        if (rp.data.ContainsKey(Param.PARENT_CID)) {
+            url += "&" + Param.PARENT_CID + "=" + rp.data[Param.PARENT_CID];
+        }
+        StartCoroutine(NetUtil.Get(Uri.EscapeUriString(url), rp.callback));
+    }
+
 }
 

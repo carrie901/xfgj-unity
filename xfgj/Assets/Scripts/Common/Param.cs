@@ -18,6 +18,7 @@ public class Param
     public const string CID = "cid";
     public const string PARENT_CID = "parent_cid";
     public const string IS_PARENT = "is_parent";
+    public const string USABLE = "usable";
     public const string SIZE = "size";
     public const string TITLE = "title";
     public const string DETAIL_URL = "detail_url";

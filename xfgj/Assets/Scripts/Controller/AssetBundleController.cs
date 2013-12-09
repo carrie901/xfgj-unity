@@ -8,41 +8,65 @@ public class AssetBundleController : MonoBehaviour
 
     public class LoadParam {
         public string path;
+        public int version;
         public string[] name;
         public LoadCallback callback;
     }
 
     private static GameObject obj;
 
-    public static void LoadObject(LoadParam param) {
+    public static void LoadObject (LoadParam param) {
         if (obj == null) {
             obj = GameObject.Find("InitObj");
         }
-        obj.SendMessage("LoadGameObject", param, SendMessageOptions.RequireReceiver);
+        obj.SendMessage("StartLoadObject", param, SendMessageOptions.RequireReceiver);
     }
 
-    private void LoadGameObject(LoadParam param) {
+    public static void LoadScene (LoadParam param) {
+        if (obj == null) {
+            obj = GameObject.Find("InitObj");
+        }
+        obj.SendMessage("StartLoadScene", param, SendMessageOptions.RequireReceiver);
+    }
+
+    private void StartLoadScene (LoadParam param) {
+        StartCoroutine(LoadSceneProgram(param.path, param.version, param.name, param.callback));
+    }
+
+    private IEnumerator LoadSceneProgram (string path, int version, string[] names, LoadCallback callback) {
+        WWW www = WWW.LoadFromCacheOrDownload(path, version);
+        yield return www;
+        if (www.error != null) {
+            Debug.Log(www.error);
+        }
+        AssetBundle bundle = www.assetBundle;
+        AsyncOperation oper = Application.LoadLevelAdditiveAsync(names[0]);
+        yield return oper;
+        bundle.Unload(false);
+    }
+
+    private void StartLoadObject (LoadParam param) {
         if (param == null || param.path == null || param.path.Equals(string.Empty)
             || param.name == null || param.callback == null) {
             throw new Exception("param can't be null");
         }
-        StartCoroutine(LoadGameObject(param.path, param.name, param.callback));
+        StartCoroutine(LoadObjectProgram(param.path, param.version, param.name, param.callback));
     }
 
-    private IEnumerator LoadGameObject (string path, string[] names, LoadCallback callback) {
-        WWW bundle = WWW.LoadFromCacheOrDownload(path, 1);
-        yield return bundle;
+    private IEnumerator LoadObjectProgram (string path, int version, string[] names, LoadCallback callback) {
+        WWW www = WWW.LoadFromCacheOrDownload(path, version);
+        yield return www;
         UnityEngine.Object[] objs = new UnityEngine.Object[names.Length];
         for (int i = 0; i < names.Length; ++i) {
             if (names[i] != null) {
-                objs[i] = Instantiate(bundle.assetBundle.Load(names[i]));
+                objs[i] = Instantiate(www.assetBundle.Load(names[i]));
             }
             else {
                 objs[i] = null;
             }
         }
         callback(objs);
-        bundle.assetBundle.Unload(false);
+        www.assetBundle.Unload(false);
     }
 }
 

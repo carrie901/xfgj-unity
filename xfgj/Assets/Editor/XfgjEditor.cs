@@ -14,9 +14,9 @@ static public class XfgjEditor {
             string targetUnity = STREAMING_ASSETS + "Unity/" + obj.name + ".assetbundle";
             string targetIos = STREAMING_ASSETS + "Ios/" + obj.name + ".assetbundle";
             string targetAndroid = STREAMING_ASSETS + "Android/" + obj.name + ".assetbundle";
-            BuildPipeline.BuildAssetBundle(obj, null, targetUnity, BuildAssetBundleOptions.CollectDependencies);
             BuildPipeline.BuildAssetBundle(obj, null, targetIos, BuildAssetBundleOptions.CollectDependencies, BuildTarget.iPhone);
             BuildPipeline.BuildAssetBundle(obj, null, targetAndroid, BuildAssetBundleOptions.CollectDependencies, BuildTarget.Android);
+            BuildPipeline.BuildAssetBundle(obj, null, targetUnity, BuildAssetBundleOptions.CollectDependencies, BuildTarget.StandaloneOSXIntel64);
         }
         AssetDatabase.Refresh();
     }
@@ -32,9 +32,24 @@ static public class XfgjEditor {
         {
             Debug.Log ("Create AssetBundles name: " + obj);
         }
-        BuildPipeline.BuildAssetBundle(null, SelectedAsset, targetUnity, BuildAssetBundleOptions.CollectDependencies);
         BuildPipeline.BuildAssetBundle(null, SelectedAsset, targetIos, BuildAssetBundleOptions.CollectDependencies, BuildTarget.iPhone);
         BuildPipeline.BuildAssetBundle(null, SelectedAsset, targetAndroid, BuildAssetBundleOptions.CollectDependencies, BuildTarget.Android);
+        BuildPipeline.BuildAssetBundle(null, SelectedAsset, targetUnity, BuildAssetBundleOptions.CollectDependencies, BuildTarget.StandaloneOSXIntel64);
+        AssetDatabase.Refresh();
+    }
+
+    [MenuItem("Custom/Create Scene AssetBundle")]
+    static void CreateSceneAssetBundle () {
+        Object[] SelectedAsset = Selection.GetFiltered (typeof(Object), SelectionMode.DeepAssets);
+        foreach (Object obj in SelectedAsset) {
+            string targetUnity = STREAMING_ASSETS + "Unity/" + obj.name + ".unity3d";
+            string targetIos = STREAMING_ASSETS + "Ios/" + obj.name + ".unity3d";
+            string targetAndroid = STREAMING_ASSETS + "Android/" + obj.name + ".unity3d";
+            string[] levels = new string[] {AssetDatabase.GetAssetPath(obj)};
+            BuildPipeline.BuildStreamedSceneAssetBundle(levels, targetIos, BuildTarget.iPhone);
+            BuildPipeline.BuildStreamedSceneAssetBundle(levels, targetAndroid, BuildTarget.Android);
+            BuildPipeline.BuildStreamedSceneAssetBundle(levels, targetUnity, BuildTarget.StandaloneOSXIntel64);
+        }
         AssetDatabase.Refresh();
     }
 

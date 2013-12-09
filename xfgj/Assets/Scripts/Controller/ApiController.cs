@@ -138,5 +138,25 @@ public class ApiController {
         rp.callback = handle;
         obj.SendMessage("GetProductsWithProducerId", rp, SendMessageOptions.RequireReceiver);
     }
+
+    public static void GetCategory (string token, int cid, ApiCaller.ResponseHandle handle) {
+        ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
+        rp.data = new Dictionary<string, string>();
+        rp.data.Add(Param.CID, "" + cid);
+        rp.data.Add(Param.TOKEN, token);
+        rp.callback = handle;
+        obj.SendMessage("GetCategory", rp, SendMessageOptions.RequireReceiver);
+    }
+
+    public static void GetCategorys (string token, int? parentCid, ApiCaller.ResponseHandle handle) {
+        ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
+        rp.data = new Dictionary<string, string>();
+        rp.data.Add(Param.TOKEN, token);
+        if (parentCid != null) {
+            rp.data.Add(Param.PARENT_CID, "" + (int)parentCid);
+        }
+        rp.callback = handle;
+        obj.SendMessage("GetCategorys", rp, SendMessageOptions.RequireReceiver);
+    }
 }
 

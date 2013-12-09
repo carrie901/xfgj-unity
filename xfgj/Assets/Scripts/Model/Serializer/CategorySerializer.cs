@@ -10,7 +10,8 @@ public class CategorySerializer
         }
         JsonData jd = JsonMapper.ToObject(str);
         return new Category((int)jd[Param.CID], (string)jd[Param.NAME],
-                            (int)jd[Param.PARENT_CID], (bool)jd[Param.IS_PARENT]);
+                            (int)jd[Param.PARENT_CID], (bool)jd[Param.IS_PARENT],
+                            (bool)jd[Param.USABLE], StringUtil.StringToDateTime((string)jd[Param.MODIFIED]));
     }
 
     public static List<Category> ToObjects (string str) {

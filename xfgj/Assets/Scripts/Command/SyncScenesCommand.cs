@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-public class SyncScenesCommand {
+public class SyncScenesCommand : BaseCommand {
 
     private UIDelegate.Update callback;
 
@@ -10,7 +10,7 @@ public class SyncScenesCommand {
         this.callback = callback;
     }
 
-    public void execute () {
+    public override void execute () {
         DateTime? dt = null;
         Scene scene = LogicController.GetLatestMofifiedScene();
         if (scene != null) {
@@ -21,7 +21,6 @@ public class SyncScenesCommand {
     }
 
     private void handle (string str) {
-        Debug.Log("getscenes " + str);
         List<Scene> list = SceneSerializer.ToObjects(str);
         if (list != null && list.Count != 0) {
             LogicController.ReplaceScenes(list);
