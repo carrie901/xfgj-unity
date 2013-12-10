@@ -21,14 +21,19 @@ public class SyncScenesCommand : BaseCommand {
     }
 
     private void handle (string str) {
-        List<Scene> list = SceneSerializer.ToObjects(str);
-        if (list != null && list.Count != 0) {
-            LogicController.ReplaceScenes(list);
-            callback(true);
+        List<Scene> updateList;
+        List<Scene> deleteList;
+        SceneSerializer.ToObjects(str, out updateList, out deleteList);
+        bool result = false;
+        if (updateList != null && updateList.Count != 0) {
+            LogicController.ReplaceScenes(updateList);
+            result = true;
         }
-        else {
-            callback(false);
+        if (deleteList != null && deleteList.Count != 0) {
+            LogicController.DeleteScenes(deleteList);
+            result = true;
         }
+        callback(result);
     }
 
 }

@@ -15,5 +15,19 @@ public class StringUtil {
         dtFormat.LongTimePattern = Config.DATETIME_FORMAT;
         return Convert.ToDateTime(s, dtFormat);
     }
+
+    public static string FileNameWithoutExt (string fileName) {
+        if (String.IsNullOrEmpty(fileName)) {
+            return null;
+        }
+        int index = fileName.IndexOf('.');
+        if (index == 0) {
+            return "";
+        }
+        if (index == -1) {
+            return fileName;
+        }
+        return fileName.Substring(0, index);
+    }
     
 }

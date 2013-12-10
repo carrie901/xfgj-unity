@@ -36,7 +36,8 @@ public class ApiTest : UUnitTestCase
         JsonData jd = JsonMapper.ToObject(res);
         Scene scene = new Scene((int)(jd[Param.SCENE_ID]), (string)(jd[Param.NAME]),
                                 (int)(jd[Param.TYPE_ID]), (string)(jd[Param.PIC_URL]),
-                                (string)(jd[Param.DETAILS]), StringUtil.StringToDateTime((string)(jd[Param.MODIFIED])));
+                                (string)(jd[Param.DETAILS]), StringUtil.StringToDateTime((string)(jd[Param.MODIFIED])),
+                                (string)jd[Param.ASSET_NAME], (int)jd[Param.ASSET_VERSION]);
         UUnitAssert.Equals(100001, scene.sceneId);
     }
 
@@ -55,7 +56,8 @@ public class ApiTest : UUnitTestCase
         UUnitAssert.True(jd.IsArray);
         Scene scene = new Scene((int)(jd[0][Param.SCENE_ID]), (string)(jd[0][Param.NAME]),
                                 (int)(jd[0][Param.TYPE_ID]), (string)(jd[0][Param.PIC_URL]),
-                                (string)(jd[0][Param.DETAILS]), StringUtil.StringToDateTime((string)(jd[0][Param.MODIFIED])));
+                                (string)(jd[0][Param.DETAILS]), StringUtil.StringToDateTime((string)(jd[0][Param.MODIFIED])),
+                                (string)jd[Param.ASSET_NAME], (int)jd[Param.ASSET_VERSION]);
         UUnitAssert.NotNull(scene);
     }
 
@@ -132,7 +134,8 @@ public class ApiTest : UUnitTestCase
                                       (string)(jd[Param.SIZE]),
                                       (string)(jd[Param.PIC_URL]),
                                       (string)(jd[Param.DETAILS]),
-                                      StringUtil.StringToDateTime((string)(jd[Param.MODIFIED])));
+                                      StringUtil.StringToDateTime((string)(jd[Param.MODIFIED])),
+                                      (string)jd[Param.ASSET_NAME], (int)jd[Param.ASSET_VERSION]);
         UUnitAssert.NotNull(product);
     }
 
@@ -178,7 +181,8 @@ public class ApiTest : UUnitTestCase
                                       (string)(jd[0][Param.SIZE]),
                                       (string)(jd[0][Param.PIC_URL]),
                                       (string)(jd[0][Param.DETAILS]),
-                                      StringUtil.StringToDateTime((string)(jd[0][Param.MODIFIED])));
+                                      StringUtil.StringToDateTime((string)(jd[0][Param.MODIFIED])),
+                                      (string)jd[Param.ASSET_NAME], (int)jd[Param.ASSET_VERSION]);
             UUnitAssert.NotNull(product);
         }
     }

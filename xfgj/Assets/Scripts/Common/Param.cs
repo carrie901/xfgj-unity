@@ -33,4 +33,7 @@ public class Param
     public const string CREATED = "created";
     public const string CONTENT = "content";
     public const string REPLY = "reply";
+    public const string ASSET_NAME = "asset_name";
+    public const string ASSET_VERSION = "asset_version";
+    public const string STATUS = "status";
 }
