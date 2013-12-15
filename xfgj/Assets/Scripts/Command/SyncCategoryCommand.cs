@@ -13,8 +13,8 @@ public class SyncCategoryCommand : BaseCommand {
 
     private void handle (string str) {
         List<Category> list = CategorySerializer.ToObjects(str);
-        if (list != null) {
-            Debug.Log("Category count " + list.Count);
+        if (list != null && list.Count != 0) {
+            LogicController.ReplaceCategorys(list);
         }
     }
 }

@@ -55,6 +55,16 @@ public class ApiController {
         obj.SendMessage("GetScenes", rp, SendMessageOptions.RequireReceiver);
     }
 
+    public static void GetSceneSnapshot (string token, int sceneId,
+                                         ApiCaller.ResponseHandle handle) {
+        ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
+        rp.data = new Dictionary<string, string>();
+        rp.data.Add(Param.TOKEN, token);
+        rp.data.Add(Param.SCENE_ID, "" + sceneId);
+        rp.callback = handle;
+        obj.SendMessage("GetSceneSnapshot", rp, SendMessageOptions.RequireReceiver);
+    }
+
     public static void GetSceneType (string token, int sceneTypeId, DateTime? modified,
                                      ApiCaller.ResponseHandle handle) {
         ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
@@ -157,6 +167,52 @@ public class ApiController {
         }
         rp.callback = handle;
         obj.SendMessage("GetCategorys", rp, SendMessageOptions.RequireReceiver);
+    }
+
+    public static void GetAppSetting (string token) {
+
+    }
+
+    public static void UploadAtlas (string token, string metaData, string unityPath,
+                                    string iphonePath, string androidPath,
+                                    ApiCaller.ResponseHandle handle) {
+        ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
+        rp.data = new Dictionary<string, string>();
+        rp.data.Add(Param.TOKEN, token);
+        rp.data.Add(Param.META_DATA, metaData);
+        rp.data.Add(Param.ASSET_TYPE, "picture");
+        if (!string.IsNullOrEmpty(unityPath)) {
+            rp.data.Add(Param.ASSET_UNITY, unityPath);
+        }
+        if (!string.IsNullOrEmpty(iphonePath)) {
+            rp.data.Add(Param.ASSET_IPHONE, iphonePath);
+        }
+        if (!string.IsNullOrEmpty(androidPath)) {
+            rp.data.Add(Param.ASSET_ANDROID, androidPath);
+        }
+        rp.callback = handle;
+        obj.SendMessage("UploadAssetBundle", rp, SendMessageOptions.RequireReceiver);
+    }
+
+    public static void UploadScene (string token, string metaData, string unityPath,
+                                    string iphonePath, string androidPath,
+                                    ApiCaller.ResponseHandle handle) {
+        ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
+        rp.data = new Dictionary<string, string>();
+        rp.data.Add(Param.TOKEN, token);
+        rp.data.Add(Param.META_DATA, metaData);
+        rp.data.Add(Param.ASSET_TYPE, "scene");
+        if (!string.IsNullOrEmpty(unityPath)) {
+            rp.data.Add(Param.ASSET_UNITY, unityPath);
+        }
+        if (!string.IsNullOrEmpty(iphonePath)) {
+            rp.data.Add(Param.ASSET_IPHONE, iphonePath);
+        }
+        if (!string.IsNullOrEmpty(androidPath)) {
+            rp.data.Add(Param.ASSET_ANDROID, androidPath);
+        }
+        rp.callback = handle;
+        obj.SendMessage("UploadAssetBundle", rp, SendMessageOptions.RequireReceiver);
     }
 }
 

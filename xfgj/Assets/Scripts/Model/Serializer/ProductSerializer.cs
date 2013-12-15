@@ -14,9 +14,8 @@ public class ProductSerializer
         JsonData jd = JsonMapper.ToObject(str);
         return new Product((int)jd[Param.PRODUCT_ID], (int)jd[Param.PRODUCER_ID],
             (string)jd[Param.NAME], (int)jd[Param.CID], (string)jd[Param.SIZE],
-            (string)jd[Param.PIC_URL], (string)jd[Param.DETAILS],
-            StringUtil.StringToDateTime((string)jd[Param.MODIFIED]),
-            (string)jd[Param.ASSET_NAME], (int)jd[Param.ASSET_VERSION]);
+            (string)jd[Param.PICTURE_ID], (string)jd[Param.DETAILS],
+            StringUtil.StringToDateTime((string)jd[Param.MODIFIED]));
     }
 
     public static List<Product> ToObjects (string str) {
@@ -47,9 +46,8 @@ public class ProductSerializer
         isDeleted = STATUS_DELETED.Equals((string)jd[Param.STATUS]);
         product = new Product((int)jd[Param.PRODUCT_ID], (int)jd[Param.PRODUCER_ID],
             (string)jd[Param.NAME], (int)jd[Param.CID], (string)jd[Param.SIZE],
-            (string)jd[Param.PIC_URL], (string)jd[Param.DETAILS],
-            StringUtil.StringToDateTime((string)jd[Param.MODIFIED]),
-            (string)jd[Param.ASSET_NAME], (int)jd[Param.ASSET_VERSION]);
+            (string)jd[Param.PICTURE_ID], (string)jd[Param.DETAILS],
+            StringUtil.StringToDateTime((string)jd[Param.MODIFIED]));
     }
 
     public static void ToObjects (string str, out List<Product> updateList,

@@ -2,6 +2,7 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 
+[ExecuteInEditMode]
 public class ApiCaller : MonoBehaviour {
 
     public delegate void ResponseHandle(string res);
@@ -45,6 +46,15 @@ public class ApiCaller : MonoBehaviour {
         if (rp.data.ContainsKey(Param.LATEST_MODIFIED)) {
             url += "&" + Param.LATEST_MODIFIED + "=" + rp.data[Param.LATEST_MODIFIED];
         }
+        StartCoroutine(NetUtil.Get(Uri.EscapeUriString(url), rp.callback));
+    }
+
+    /*
+     * required: token, scene_id
+     */
+    public void GetSceneSnapshot (RequestParams rp) {
+        string url = Config.SERVER_URL + "/api/scene/" + rp.data[Param.SCENE_ID] + "/snapshot";
+        url += "?" + Param.TOKEN + "=" + rp.data[Param.TOKEN];
         StartCoroutine(NetUtil.Get(Uri.EscapeUriString(url), rp.callback));
     }
 
@@ -149,6 +159,38 @@ public class ApiCaller : MonoBehaviour {
             url += "&" + Param.PARENT_CID + "=" + rp.data[Param.PARENT_CID];
         }
         StartCoroutine(NetUtil.Get(Uri.EscapeUriString(url), rp.callback));
+    }
+
+    /*
+     * required: token
+     */
+    public void GetAppSetting (RequestParams rp) {
+        string url = Config.SERVER_URL + "/api/app";
+        url += "?" + Param.TOKEN + "=" + rp.data[Param.TOKEN];
+        StartCoroutine(NetUtil.Get(Uri.EscapeUriString(url), rp.callback));
+    }
+
+    /*
+     * required: token
+     *           asset_file  file data
+     *           meta_data   relate model
+     *           type        atlas or scene
+     */
+    public void UploadAssetBundle (RequestParams rp) {
+        string url = Config.SERVER_URL + "/api/asset/upload";
+        Dictionary<string, string> postFields = new Dictionary<string, string>();
+        Dictionary<string, string> postFiles = new Dictionary<string, string>();
+        foreach (KeyValuePair<string, string> postArg in rp.data) {
+            if (postArg.Key.Equals(Param.ASSET_UNITY) ||
+                postArg.Key.Equals(Param.ASSET_IPHONE) ||
+                postArg.Key.Equals(Param.ASSET_ANDROID)) {
+                postFiles.Add(postArg.Key, postArg.Value);
+            }
+            else {
+                postFields.Add(postArg.Key, postArg.Value);
+            }
+        }
+        StartCoroutine(NetUtil.Upload(url, postFields, postFiles, rp.callback));
     }
 
 }

@@ -34,6 +34,10 @@ public class Initialize : MonoBehaviour {
         if (abc == null) {
             gameObject.AddComponent("AssetBundleController");
         }
+        if (!Application.isEditor) {
+            InitInEditMode comp = gameObject.GetComponent<InitInEditMode>();
+            Destroy(comp);
+        }
     }
 
 }

@@ -1,7 +1,6 @@
 using System;
 
-public class Param
-{
+public class Param {
     public const string APP_KEY = "app_key";
     public const string TOKEN = "token";
     public const string SCENE_ID = "scene_id";
@@ -33,7 +32,24 @@ public class Param
     public const string CREATED = "created";
     public const string CONTENT = "content";
     public const string REPLY = "reply";
-    public const string ASSET_NAME = "asset_name";
-    public const string ASSET_VERSION = "asset_version";
+    public const string ASSET_ID = "asset_id";
+    public const string VERSION = "version";
+    public const string PRODUCTS = "products";
     public const string STATUS = "status";
+    public const string PICTURE_ID = "picture_id";
+    public const string ATLAS_NAME = "atlas_name";
+    public const string SCENE = "scene";
+    public const string PRODUCT = "product";
+    public const string PICTURE = "picture";
+    public const string ASSET = "asset";
+    public const string META_DATA = "meta_data";
+    public const string ASSET_FILE = "asset_file";
+    public const string ASSET_TYPE = "asset_type";
+    public const string ASSET_NAME = "asset_name";
+    public const string SCENES = "scenes";
+    public const string ATLASES = "atlases";
+    public const string PICTURES = "pictures";
+    public const string ASSET_UNITY = "asset_unity";
+    public const string ASSET_IPHONE = "asset_iphone";
+    public const string ASSET_ANDROID = "asset_android";
 }

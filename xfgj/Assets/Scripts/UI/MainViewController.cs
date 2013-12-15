@@ -4,6 +4,8 @@ using System.Collections.Generic;
 
 public class MainViewController {
 
+    private const string SCENE_ITEM_PREFIX = "s_";
+
     private GameObject root;
     private GameObject scrollPanel;
     private UIScrollView scrollComp;
@@ -56,7 +58,9 @@ public class MainViewController {
         List<Scene> scenes = LogicController.GetScenesBySceneType(100001);
         GameObject sceneItem = Resources.Load("Prefabs/scene_item") as GameObject;
         for (int i = 0; i < scenes.Count; ++i) {
-            NGUITools.AddChild(table, sceneItem);
+            GameObject item = NGUITools.AddChild(table, sceneItem);
+            item.name = SCENE_ITEM_PREFIX + scenes[i].sceneId;
+            UIEventListener.Get(item).onClick = ItemClick;
         }
         tableComp.Reposition();
     }
@@ -68,6 +72,19 @@ public class MainViewController {
         if (Math.Abs(scrollPanel.transform.localPosition.y - scrollComp.bounds.extents.y) < 5) {
             Debug.Log("scroll to the bottom");
             ToggleLoading();
+        }
+    }
+
+    private void ItemClick (GameObject go) {
+        Debug.Log("item click now");
+        Scene scene = LogicController.GetScene(Int32.Parse(go.name.Substring(SCENE_ITEM_PREFIX.Length)));
+        if (scene != null) {
+            /*AssetBundleController.LoadParam param = new AssetBundleController.LoadParam();
+            param.path = Config.ASSET_URL + scene.assetName;
+            param.name = new string[] {StringUtil.GetFileNameWithoutExt(scene.assetName)};
+            param.version = scene.assetVersion;
+            AssetBundleController.LoadScene(param);
+            */
         }
     }
 
@@ -93,8 +110,8 @@ public class MainViewController {
 
     #endregion
 
-    #region api callback
-
-    #endregion
+    void callback (string res) {
+        Debug.Log("upload res " + res);
+    }
 }
 

@@ -1,3 +1,4 @@
+using UnityEngine;
 using System;
 using System.Collections.Generic;
 using LitJson;
@@ -14,9 +15,9 @@ public class SceneSerializer
         }
         JsonData jd = JsonMapper.ToObject(str);
         return new Scene((int)jd[Param.SCENE_ID], (string)jd[Param.NAME],
-            (int)jd[Param.TYPE_ID], (string)jd[Param.PIC_URL], (string)jd[Param.DETAILS],
+            (int)jd[Param.TYPE_ID], (string)jd[Param.PICTURE_ID], (string)jd[Param.DETAILS],
             StringUtil.StringToDateTime((string)jd[Param.MODIFIED]),
-            (string)jd[Param.ASSET_NAME], (int)jd[Param.ASSET_VERSION]);
+            (int)jd[Param.ASSET_ID], (string)jd[Param.PRODUCTS]);
     }
 
     public static List<Scene> ToObjects (string str) {
@@ -46,9 +47,9 @@ public class SceneSerializer
         JsonData jd = JsonMapper.ToObject(str);
         isDeleted = STATUS_DELETED.Equals((string)jd[Param.STATUS]);
         scene = new Scene((int)jd[Param.SCENE_ID], (string)jd[Param.NAME],
-            (int)jd[Param.TYPE_ID], (string)jd[Param.PIC_URL], (string)jd[Param.DETAILS],
+            (int)jd[Param.TYPE_ID], (string)jd[Param.PICTURE_ID], (string)jd[Param.DETAILS],
             StringUtil.StringToDateTime((string)jd[Param.MODIFIED]),
-            (string)jd[Param.ASSET_NAME], (int)jd[Param.ASSET_VERSION]);
+            (int)jd[Param.ASSET_ID], (string)jd[Param.PRODUCTS]);
     }
 
     public static void ToObjects (string str, out List<Scene> updateList,

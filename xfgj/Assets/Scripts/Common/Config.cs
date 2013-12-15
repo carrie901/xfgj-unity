@@ -35,7 +35,7 @@ public class Config {
         DB_PATH = "Data Source=" + Application.persistentDataPath + "/xfgj.sqlite";
         STREAMING_ASSETS = Application.dataPath + "/Raw/";
         ASSETBUNDLE_PATH = STREAMING_ASSETS + "Ios/";
-        APP_VERSION = "iPhone"
+        APP_VERSION = "iPhone";
 #else
         DB_PATH = "Data Source=xfgj.sqlite";
         STREAMING_ASSETS = "file://" + Application.dataPath + "/StreamingAssets/";

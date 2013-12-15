@@ -16,10 +16,12 @@ public class LogicController {
         dbAccess.CreateTable(Scene.CREATE_SQL);
         dbAccess.CreateTable(SceneType.CREATE_SQL);
         dbAccess.CreateTable(Traderate.CREATE_SQL);
+        dbAccess.CreateTable(Picture.CREATE_SQL);
+        dbAccess.CreateTable(Asset.CREATE_SQL);
         dbAccess.CloseSqlConnection();
     }
     
-    #region category operation
+    #region category
     public static void InsertCategory (Category category) {
         if (category == null) {
             throw new SqliteException("category can't be null");
@@ -104,7 +106,7 @@ public class LogicController {
     }
     #endregion
     
-    #region Item operation
+    #region Item
     public static void InsertItem (Item item) {
         if (item == null) {
             throw new SqliteException("item can't be null");
@@ -174,7 +176,7 @@ public class LogicController {
     }
     #endregion
     
-    #region Producer operation
+    #region Producer
     public static void InsertProducer (Producer producer) {
         if (producer == null) {
             throw new SqliteException("producer can't be null");
@@ -233,7 +235,7 @@ public class LogicController {
     }
     #endregion
     
-    #region Product operation
+    #region Product
     public static void InsertProduct (Product product) {
         if (product == null) {
             throw new SqliteException("product can't be null");
@@ -242,13 +244,11 @@ public class LogicController {
         dbAccess.OpenDB(Config.DB_PATH);
         string[] cols = new string[] {Product.FIELD_PRODUCT_ID, Product.FIELD_PRODUCER_ID,
                                       Product.FIELD_NAME, Product.FIELD_CID, Product.FIELD_DETAILS,
-                                      Product.FIELD_PIC_URL, Product.FIELD_SIZE,
-                                      Product.FIELD_MODIFIED, Product.FIELD_ASSET_NAME,
-                                      Product.FIELD_ASSET_VERSION};
+                                      Product.FIELD_PICTURE_ID, Product.FIELD_SIZE,
+                                      Product.FIELD_MODIFIED};
         object[] values = new object[] {product.productId, product.producerId, product.name, product.cid,
-                                        product.details, product.picUrl, product.size,
-                                        StringUtil.DateTimeToString(product.modified),
-                                        product.assetName, product.assetVersion};
+                                        product.details, product.pictureId, product.size,
+                                        StringUtil.DateTimeToString(product.modified)};
         dbAccess.Insert(Product.TABLE_NAME, cols, values);
         dbAccess.CloseSqlConnection();
     }
@@ -260,18 +260,41 @@ public class LogicController {
         DBAccess dbAccess = new DBAccess();
         dbAccess.OpenDB(Config.DB_PATH);
         string[] cols = new string[] {Product.FIELD_PRODUCER_ID, Product.FIELD_NAME,
-                                      Product.FIELD_CID, Product.FIELD_DETAILS, Product.FIELD_PIC_URL,
-                                      Product.FIELD_SIZE, Product.FIELD_MODIFIED,
-                                      Product.FIELD_ASSET_NAME, Product.FIELD_ASSET_VERSION};
+                                      Product.FIELD_CID, Product.FIELD_DETAILS, Product.FIELD_PICTURE_ID,
+                                      Product.FIELD_SIZE, Product.FIELD_MODIFIED};
         object[] values = new object[] {product.producerId, product.name, product.cid,
-                                        product.details, product.picUrl, product.size,
-                                        StringUtil.DateTimeToString(product.modified),
-                                        product.assetName, product.assetVersion};
+                                        product.details, product.pictureId, product.size,
+                                        StringUtil.DateTimeToString(product.modified)};
         string whereArgs = "WHERE " + Product.FIELD_PRODUCT_ID + "=" + product.productId;
         dbAccess.Update(Product.TABLE_NAME, cols, values, whereArgs);
         dbAccess.CloseSqlConnection();
     }
-    
+
+    public static void ReplaceProducts (List<Product> list) {
+        if (list == null || list.Count == 0) {
+            throw new SqliteException("list can't be empty");
+        }
+        DBAccess dbAccess = new DBAccess();
+        dbAccess.OpenDB(Config.DB_PATH);
+        string[] cols = new string[] {Product.FIELD_PRODUCT_ID, Product.FIELD_PRODUCER_ID,
+                                      Product.FIELD_NAME, Product.FIELD_CID, Product.FIELD_DETAILS,
+                                      Product.FIELD_PICTURE_ID, Product.FIELD_SIZE,
+                                      Product.FIELD_MODIFIED};
+        object[,] values = new object[list.Count, cols.Length];
+        for (int i = 0; i < list.Count; ++i) {
+            values[i, 0] = list[i].productId;
+            values[i, 1] = list[i].producerId;
+            values[i, 2] = list[i].name;
+            values[i, 3] = list[i].cid;
+            values[i, 4] = list[i].details;
+            values[i, 5] = list[i].pictureId;
+            values[i, 6] = list[i].size;
+            values[i, 7] = StringUtil.DateTimeToString(list[i].modified);
+        }
+        dbAccess.ReplaceInBatch(Product.TABLE_NAME, cols, values);
+        dbAccess.CloseSqlConnection();
+    }
+
     public static void DeleteProduct (Product product) {
         if (product == null) {
             throw new SqliteException("product can't be null");
@@ -280,6 +303,27 @@ public class LogicController {
         dbAccess.OpenDB(Config.DB_PATH);
         string whereArgs = "WHERE " + Product.FIELD_PRODUCT_ID + "=" + product.productId;
         dbAccess.Delete(Product.TABLE_NAME, whereArgs);
+        dbAccess.CloseSqlConnection();
+    }
+
+    public static void DeleteProducts (List<Product> list) {
+        if (list == null || list.Count == 0) {
+            throw new SqliteException("list can't be empty");
+        }
+        DBAccess dbAccess = new DBAccess();
+        dbAccess.OpenDB(Config.DB_PATH);
+        StringBuilder whereArgs = new StringBuilder();
+        whereArgs.Append("WHERE " + Product.FIELD_PRODUCT_ID + " in (");
+        for (int i = 0; i < list.Count; ++i) {
+            whereArgs.Append(list[i].productId);
+            if (i == list.Count - 1) {
+                whereArgs.Append(")");
+            }
+            else {
+                whereArgs.Append(",");
+            }
+        }
+        dbAccess.Delete(Product.TABLE_NAME, whereArgs.ToString());
         dbAccess.CloseSqlConnection();
     }
     
@@ -295,11 +339,9 @@ public class LogicController {
                             reader.GetString(reader.GetOrdinal(Product.FIELD_NAME)),
                             reader.GetInt32(reader.GetOrdinal(Product.FIELD_CID)),
                             reader.GetString(reader.GetOrdinal(Product.FIELD_SIZE)),
-                            reader.GetString(reader.GetOrdinal(Product.FIELD_PIC_URL)),
+                            reader.GetString(reader.GetOrdinal(Product.FIELD_PICTURE_ID)),
                             reader.GetString(reader.GetOrdinal(Product.FIELD_DETAILS)),
-                            StringUtil.StringToDateTime(reader.GetString(reader.GetOrdinal(Product.FIELD_MODIFIED))),
-                            reader.GetString(reader.GetOrdinal(Product.FIELD_ASSET_NAME)),
-                            reader.GetInt32(reader.GetOrdinal(Product.FIELD_ASSET_VERSION)));
+                            StringUtil.StringToDateTime(reader.GetString(reader.GetOrdinal(Product.FIELD_MODIFIED))));
         }
         reader.Close();
         dbAccess.CloseSqlConnection();
@@ -307,7 +349,7 @@ public class LogicController {
     }
     #endregion
     
-    #region Scene operation
+    #region Scene
     public static void InsertScene (Scene scene) {
         if (scene == null) {
             throw new SqliteException("scene can't be null");
@@ -315,11 +357,11 @@ public class LogicController {
         DBAccess dbAccess = new DBAccess();
         dbAccess.OpenDB(Config.DB_PATH);
         string[] cols = new string[] {Scene.FIELD_SCENE_ID, Scene.FIELD_NAME, Scene.FIELD_TYPE_ID, 
-                                      Scene.FIELD_PIC_URL, Scene.FIELD_DETAILS, Scene.FIELD_MODIFIED,
-                                      Scene.FIELD_ASSET_NAME, Scene.FIELD_ASSET_VERSION};
+                                      Scene.FIELD_PICTURE_ID, Scene.FIELD_DETAILS, Scene.FIELD_MODIFIED,
+                                      Scene.FIELD_ASSET_ID, Scene.FIELD_PRODUCTS};
         object[] values = new object[] {scene.sceneId, scene.name, scene.typeId,
-                                        scene.picUrl, scene.details, StringUtil.DateTimeToString(scene.modified),
-                                        scene.assetName, scene.assetVersion};
+                                        scene.pictureId, scene.details, StringUtil.DateTimeToString(scene.modified),
+                                        scene.assetId, scene.products};
         dbAccess.Insert(Scene.TABLE_NAME, cols, values);
         dbAccess.CloseSqlConnection();
     }
@@ -331,11 +373,11 @@ public class LogicController {
         DBAccess dbAccess = new DBAccess();
         dbAccess.OpenDB(Config.DB_PATH);
         string[] cols = new string[] {Scene.FIELD_NAME, Scene.FIELD_TYPE_ID,
-                                      Scene.FIELD_PIC_URL, Scene.FIELD_DETAILS, Scene.FIELD_MODIFIED,
-                                      Scene.FIELD_ASSET_NAME, Scene.FIELD_ASSET_VERSION};
+                                      Scene.FIELD_PICTURE_ID, Scene.FIELD_DETAILS, Scene.FIELD_MODIFIED,
+                                      Scene.FIELD_ASSET_ID, Scene.FIELD_PRODUCTS};
         object[] values = new object[] {scene.name, scene.typeId,
-                                        scene.picUrl, scene.details, StringUtil.DateTimeToString(scene.modified),
-                                        scene.assetName, scene.assetVersion};
+                                        scene.pictureId, scene.details, StringUtil.DateTimeToString(scene.modified),
+                                        scene.assetId, scene.products};
         string whereArgs = "WHERE " + Scene.FIELD_SCENE_ID + "=" + scene.sceneId;
         dbAccess.Update(Scene.TABLE_NAME, cols, values, whereArgs);
         dbAccess.CloseSqlConnection();
@@ -348,18 +390,18 @@ public class LogicController {
         DBAccess dbAccess = new DBAccess();
         dbAccess.OpenDB(Config.DB_PATH);
         string[] cols = new string[] {Scene.FIELD_SCENE_ID, Scene.FIELD_NAME, Scene.FIELD_TYPE_ID, 
-                                      Scene.FIELD_PIC_URL, Scene.FIELD_DETAILS, Scene.FIELD_MODIFIED,
-                                      Scene.FIELD_ASSET_NAME, Scene.FIELD_ASSET_VERSION};
+                                      Scene.FIELD_PICTURE_ID, Scene.FIELD_DETAILS, Scene.FIELD_MODIFIED,
+                                      Scene.FIELD_ASSET_ID, Scene.FIELD_PRODUCTS};
         object[,] values = new object[list.Count, cols.Length];
         for (int i = 0; i < list.Count; ++i) {
             values[i, 0] = list[i].sceneId;
             values[i, 1] = list[i].name;
             values[i, 2] = list[i].typeId;
-            values[i, 3] = list[i].picUrl;
+            values[i, 3] = list[i].pictureId;
             values[i, 4] = list[i].details;
             values[i, 5] = StringUtil.DateTimeToString(list[i].modified);
-            values[i, 6] = list[i].assetName;
-            values[i, 7] = list[i].assetVersion;
+            values[i, 6] = list[i].assetId;
+            values[i, 7] = list[i].products;
         }
         dbAccess.ReplaceInBatch(Scene.TABLE_NAME, cols, values);
         dbAccess.CloseSqlConnection();
@@ -407,11 +449,11 @@ public class LogicController {
             scene = new Scene(reader.GetInt32(reader.GetOrdinal(Scene.FIELD_SCENE_ID)),
                             reader.GetString(reader.GetOrdinal(Scene.FIELD_NAME)),
                             reader.GetInt32(reader.GetOrdinal(Scene.FIELD_TYPE_ID)),
-                            reader.GetString(reader.GetOrdinal(Scene.FIELD_PIC_URL)),
+                            reader.GetString(reader.GetOrdinal(Scene.FIELD_PICTURE_ID)),
                             reader.GetString(reader.GetOrdinal(Scene.FIELD_DETAILS)),
                             StringUtil.StringToDateTime(reader.GetString(reader.GetOrdinal(Scene.FIELD_MODIFIED))),
-                            reader.GetString(reader.GetOrdinal(Scene.FIELD_ASSET_NAME)),
-                            reader.GetInt32(reader.GetOrdinal(Scene.FIELD_ASSET_VERSION)));
+                            reader.GetInt32(reader.GetOrdinal(Scene.FIELD_ASSET_ID)),
+                            reader.GetString(reader.GetOrdinal(Scene.FIELD_PRODUCTS)));
         }
         reader.Close();
         dbAccess.CloseSqlConnection();
@@ -428,11 +470,11 @@ public class LogicController {
             sceneList.Add(new Scene(reader.GetInt32(reader.GetOrdinal(Scene.FIELD_SCENE_ID)),
                                     reader.GetString(reader.GetOrdinal(Scene.FIELD_NAME)),
                                     reader.GetInt32(reader.GetOrdinal(Scene.FIELD_TYPE_ID)),
-                                    reader.GetString(reader.GetOrdinal(Scene.FIELD_PIC_URL)),
+                                    reader.GetString(reader.GetOrdinal(Scene.FIELD_PICTURE_ID)),
                                     reader.GetString(reader.GetOrdinal(Scene.FIELD_DETAILS)),
                                     StringUtil.StringToDateTime(reader.GetString(reader.GetOrdinal(Scene.FIELD_MODIFIED))),
-                                    reader.GetString(reader.GetOrdinal(Scene.FIELD_ASSET_NAME)),
-                                    reader.GetInt32(reader.GetOrdinal(Scene.FIELD_ASSET_VERSION))));
+                                    reader.GetInt32(reader.GetOrdinal(Scene.FIELD_ASSET_ID)),
+                                    reader.GetString(reader.GetOrdinal(Scene.FIELD_PRODUCTS))));
         }
         reader.Close();
         dbAccess.CloseSqlConnection();
@@ -450,11 +492,11 @@ public class LogicController {
             scene = new Scene(reader.GetInt32(reader.GetOrdinal(Scene.FIELD_SCENE_ID)),
                                     reader.GetString(reader.GetOrdinal(Scene.FIELD_NAME)),
                                     reader.GetInt32(reader.GetOrdinal(Scene.FIELD_TYPE_ID)),
-                                    reader.GetString(reader.GetOrdinal(Scene.FIELD_PIC_URL)),
+                                    reader.GetString(reader.GetOrdinal(Scene.FIELD_PICTURE_ID)),
                                     reader.GetString(reader.GetOrdinal(Scene.FIELD_DETAILS)),
                                     StringUtil.StringToDateTime(reader.GetString(reader.GetOrdinal(Scene.FIELD_MODIFIED))),
-                                    reader.GetString(reader.GetOrdinal(Scene.FIELD_ASSET_NAME)),
-                                    reader.GetInt32(reader.GetOrdinal(Scene.FIELD_ASSET_VERSION)));
+                                    reader.GetInt32(reader.GetOrdinal(Scene.FIELD_ASSET_ID)),
+                                    reader.GetString(reader.GetOrdinal(Scene.FIELD_PRODUCTS)));
         }
         reader.Close();
         dbAccess.CloseSqlConnection();
@@ -462,7 +504,7 @@ public class LogicController {
     }
     #endregion
     
-    #region SceneType operation
+    #region SceneType
     public static void InsertSceneType (SceneType sceneType) {
         if (sceneType == null) {
             throw new SqliteException("sceneType can't be null");
@@ -534,7 +576,7 @@ public class LogicController {
     }
     #endregion
     
-    #region Traderate operation
+    #region Traderate
     public static void InsertTraderate (Traderate traderate) {
         if (traderate == null) {
             throw new SqliteException("traderate can't be null");
@@ -598,6 +640,148 @@ public class LogicController {
         reader.Close();
         dbAccess.CloseSqlConnection();
         return traderate;
+    }
+    #endregion
+
+    #region Picture
+    public static void InsertPicture (Picture picture) {
+        if (picture == null) {
+            throw new SqliteException("picture can't be null");
+        }
+        DBAccess dbAccess = new DBAccess();
+        dbAccess.OpenDB(Config.DB_PATH);
+        string[] cols = new string[] {Picture.FIELD_PICTURE_ID, Picture.FIELD_ATLAS_NAME, Picture.FIELD_ASSET_ID};
+        object[] values = new object[] {picture.pictureId, picture.atlasName, picture.assetId};
+        dbAccess.Insert(Picture.TABLE_NAME, cols, values);
+        dbAccess.CloseSqlConnection();
+    }
+
+    public static void UpdatePicture (Picture picture) {
+        if (picture == null) {
+            throw new SqliteException("picture can't be null");
+        }
+        DBAccess dbAccess = new DBAccess();
+        dbAccess.OpenDB(Config.DB_PATH);
+        string[] cols = new string[] {Picture.FIELD_ATLAS_NAME, Picture.FIELD_ASSET_ID};
+        object[] values = new object[] {picture.atlasName, picture.assetId};
+        string whereArgs = "WHERE " + Picture.FIELD_PICTURE_ID + "='" + picture.pictureId + "'";
+        dbAccess.Update(Picture.TABLE_NAME, cols, values, whereArgs);
+        dbAccess.CloseSqlConnection();
+    }
+
+    public static void ReplacePictures (List<Picture> list) {
+        if (list == null || list.Count == 0) {
+            throw new SqliteException("list can't be empty");
+        }
+        DBAccess dbAccess = new DBAccess();
+        dbAccess.OpenDB(Config.DB_PATH);
+        string[] cols = new string[] {Picture.FIELD_PICTURE_ID, Picture.FIELD_ATLAS_NAME, Picture.FIELD_ASSET_ID};
+        object[,] values = new object[list.Count, cols.Length];
+        for (int i = 0; i < list.Count; ++i) {
+            values[i, 0] = list[i].pictureId;
+            values[i, 1] = list[i].atlasName;
+            values[i, 2] = list[i].assetId;
+        }
+        dbAccess.ReplaceInBatch(Picture.TABLE_NAME, cols, values);
+        dbAccess.CloseSqlConnection();
+    }
+    
+    public static void DeletePicture (Picture picture) {
+        if (picture == null) {
+            throw new SqliteException("picture can't be null");
+        }
+        DBAccess dbAccess = new DBAccess();
+        dbAccess.OpenDB(Config.DB_PATH);
+        string whereArgs = "WHERE " + Picture.FIELD_PICTURE_ID + "='" + picture.pictureId + "'";
+        dbAccess.Delete(Picture.TABLE_NAME, whereArgs);
+        dbAccess.CloseSqlConnection();
+    }
+    
+    public static Picture GetPicture (int pictureId) {
+        DBAccess dbAccess = new DBAccess();
+        dbAccess.OpenDB(Config.DB_PATH);
+        string whereArgs = "WHERE " + Picture.FIELD_PICTURE_ID + "='" + pictureId + "'";
+        SqliteDataReader reader = dbAccess.Query(Picture.TABLE_NAME, "*", whereArgs);
+        Picture picture = null;
+        while (reader.Read()) {
+            picture = new Picture(reader.GetString(reader.GetOrdinal(Picture.FIELD_PICTURE_ID)),
+                            reader.GetString(reader.GetOrdinal(Picture.FIELD_ATLAS_NAME)),
+                            reader.GetInt32(reader.GetOrdinal(Picture.FIELD_ASSET_ID)));
+        }
+        reader.Close();
+        dbAccess.CloseSqlConnection();
+        return picture;
+    }
+    #endregion
+
+    #region Asset
+    public static void InsertAsset (Asset asset) {
+        if (asset == null) {
+            throw new SqliteException("asset can't be null");
+        }
+        DBAccess dbAccess = new DBAccess();
+        dbAccess.OpenDB(Config.DB_PATH);
+        string[] cols = new string[] {Asset.FIELD_ASSET_ID, Asset.FIELD_NAME, Asset.FIELD_VERSION};
+        object[] values = new object[] {asset.assetId, asset.name, asset.version};
+        dbAccess.Insert(Asset.TABLE_NAME, cols, values);
+        dbAccess.CloseSqlConnection();
+    }
+
+    public static void UpdateAsset (Asset asset) {
+        if (asset == null) {
+            throw new SqliteException("asset can't be null");
+        }
+        DBAccess dbAccess = new DBAccess();
+        dbAccess.OpenDB(Config.DB_PATH);
+        string[] cols = new string[] {Asset.FIELD_NAME, Asset.FIELD_VERSION};
+        object[] values = new object[] {asset.name, asset.version};
+        string whereArgs = "WHERE " + Asset.FIELD_ASSET_ID + "=" + asset.assetId;
+        dbAccess.Update(Asset.TABLE_NAME, cols, values, whereArgs);
+        dbAccess.CloseSqlConnection();
+    }
+
+    public static void ReplaceAssets (List<Asset> list) {
+        if (list == null || list.Count == 0) {
+            throw new SqliteException("list can't be empty");
+        }
+        DBAccess dbAccess = new DBAccess();
+        dbAccess.OpenDB(Config.DB_PATH);
+        string[] cols = new string[] {Asset.FIELD_ASSET_ID, Asset.FIELD_NAME, Asset.FIELD_VERSION};
+        object[,] values = new object[list.Count, cols.Length];
+        for (int i = 0; i < list.Count; ++i) {
+            values[i, 0] = list[i].assetId;
+            values[i, 1] = list[i].name;
+            values[i, 2] = list[i].version;
+        }
+        dbAccess.ReplaceInBatch(Asset.TABLE_NAME, cols, values);
+        dbAccess.CloseSqlConnection();
+    }
+    
+    public static void DeleteAsset (Asset asset) {
+        if (asset == null) {
+            throw new SqliteException("asset can't be null");
+        }
+        DBAccess dbAccess = new DBAccess();
+        dbAccess.OpenDB(Config.DB_PATH);
+        string whereArgs = "WHERE " + Asset.FIELD_ASSET_ID + "=" + asset.assetId;
+        dbAccess.Delete(Asset.TABLE_NAME, whereArgs);
+        dbAccess.CloseSqlConnection();
+    }
+    
+    public static Asset GetAsset (int assetId) {
+        DBAccess dbAccess = new DBAccess();
+        dbAccess.OpenDB(Config.DB_PATH);
+        string whereArgs = "WHERE " + Asset.FIELD_ASSET_ID + "=" + assetId;
+        SqliteDataReader reader = dbAccess.Query(Asset.TABLE_NAME, "*", whereArgs);
+        Asset asset = null;
+        while (reader.Read()) {
+            asset = new Asset(reader.GetInt32(reader.GetOrdinal(Asset.FIELD_ASSET_ID)),
+                            reader.GetString(reader.GetOrdinal(Asset.FIELD_NAME)),
+                            reader.GetInt32(reader.GetOrdinal(Asset.FIELD_VERSION)));
+        }
+        reader.Close();
+        dbAccess.CloseSqlConnection();
+        return asset;
     }
     #endregion
 }
