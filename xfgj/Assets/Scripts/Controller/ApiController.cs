@@ -1,5 +1,6 @@
 using UnityEngine;
 using System;
+using System.Text;
 using System.Collections.Generic;
 
 public class ApiController {
@@ -55,12 +56,16 @@ public class ApiController {
         obj.SendMessage("GetScenes", rp, SendMessageOptions.RequireReceiver);
     }
 
-    public static void GetSceneSnapshot (string token, int sceneId,
+    public static void GetSceneSnapshot (string token, List<int> sceneIds,
                                          ApiCaller.ResponseHandle handle) {
         ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.TOKEN, token);
-        rp.data.Add(Param.SCENE_ID, "" + sceneId);
+        StringBuilder sb = new StringBuilder();
+        foreach (int sceneId in sceneIds) {
+            sb.Append(sceneId + ",");
+        }
+        rp.data.Add(Param.SCENE_IDS, sb.ToString());
         rp.callback = handle;
         obj.SendMessage("GetSceneSnapshot", rp, SendMessageOptions.RequireReceiver);
     }
@@ -171,6 +176,15 @@ public class ApiController {
 
     public static void GetAppSetting (string token) {
 
+    }
+
+    public static void GetAsset (string token, int assetId, ApiCaller.ResponseHandle handle) {
+        ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
+        rp.data = new Dictionary<string, string>();
+        rp.data.Add(Param.TOKEN, token);
+        rp.data.Add(Param.ASSET_ID, "" + assetId);
+        rp.callback = handle;
+        obj.SendMessage("GetAsset", rp, SendMessageOptions.RequireReceiver);
     }
 
     public static void UploadAtlas (string token, string metaData, string unityPath,

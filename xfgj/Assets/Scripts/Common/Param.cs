@@ -47,6 +47,7 @@ public class Param {
     public const string ASSET_TYPE = "asset_type";
     public const string ASSET_NAME = "asset_name";
     public const string SCENES = "scenes";
+    public const string SCENE_IDS = "scene_ids";
     public const string ATLASES = "atlases";
     public const string PICTURES = "pictures";
     public const string ASSET_UNITY = "asset_unity";

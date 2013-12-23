@@ -22,12 +22,12 @@ public class XfgjEditor {
 
     [MenuItem ("Custom/Scene Bundle")]
     static void ShowSceneBundleWindow () {
-        SceneBundleWindow window = (SceneBundleWindow)EditorWindow.GetWindow(typeof(SceneBundleWindow));
+        EditorWindow.GetWindow(typeof(SceneBundleWindow));
     }
 
     [MenuItem ("Custom/Atlas Bundle")]
     static void ShowAtlasBundleWindow () {
-        AtlasBundleWindow window = (AtlasBundleWindow)EditorWindow.GetWindow(typeof(AtlasBundleWindow));
+        EditorWindow.GetWindow(typeof(AtlasBundleWindow));
     }
 
 }

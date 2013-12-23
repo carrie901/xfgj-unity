@@ -23,9 +23,8 @@ public class IosAdjustor : MonoBehaviour {
         }
         else if (sys == OperatingSystem.IOS_7) {
             Debug.Log("sys is ios 7");
-            GameObject panel = GameObject.Find("UI Root (2D)/Camera/Anchor/Panel");
-            Vector3 position = panel.transform.localPosition;
-            panel.transform.localPosition = new Vector3(position.x, position.y - 10, position.z);
+            Vector3 position = gameObject.transform.localPosition;
+            gameObject.transform.localPosition = new Vector3(position.x, position.y - 10, position.z);
         }
         else {
             Debug.Log("sys is android");

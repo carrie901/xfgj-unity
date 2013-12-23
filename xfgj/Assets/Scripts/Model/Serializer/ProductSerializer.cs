@@ -4,7 +4,7 @@ using LitJson;
 
 public class ProductSerializer
 {
-    private static string STATUS_NORMAL = "normal";
+    //private static string STATUS_NORMAL = "normal";
     private static string STATUS_DELETED = "deleted";
 
     public static Product ToObject (string str) {

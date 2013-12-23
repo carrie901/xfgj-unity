@@ -11,7 +11,7 @@ public class SceneItemView {
         prefab = Resources.Load("Prefabs/scene_item") as GameObject;
     }
 
-    public static SceneItemView Add (GameObject parent) {
+    public static SceneItemView Create (GameObject parent) {
         if (parent == null) {
             return null;
         }
@@ -27,7 +27,15 @@ public class SceneItemView {
     private UILabel name;
     private UISprite thumbnail;
 
+    private string pictureId;
+
     private SceneItemView () {
+    }
+
+    public GameObject gameObject {
+        get {
+            return go;
+        }
     }
 
     public int SceneId {
@@ -45,11 +53,62 @@ public class SceneItemView {
 
     public string Name {
         get {
-            return name.name;
+            return name.text;
         }
 
         set {
-            name.name = value;
+            name.text = value;
+        }
+    }
+
+    public string PictureId {
+        get {
+            return pictureId;
+        }
+
+        set {
+            pictureId = value;
+            ShowPicture();
+        }
+    }
+
+    public void release () {
+        UnityEngine.Object.Destroy(go);
+        go = null;
+        name = null;
+        thumbnail = null;
+    }
+
+    public bool IsPictureShowed () {
+        return thumbnail.atlas != null && thumbnail.spriteName == pictureId;
+    }
+
+    public void ShowPicture () {
+        if (IsPictureShowed()) {
+            return;
+        }
+        Debug.Log("ShowPicture call");
+        Picture picture = LogicController.GetPicture(pictureId);
+        if (picture == null) { return; }
+        Asset asset = LogicController.GetAsset(picture.assetId);
+        if (asset == null) { return; }
+        AssetBundleController.LoadParam param = new AssetBundleController.LoadParam();
+        param.path = Config.ASSET_URL + asset.name;
+        param.version = asset.version;
+        param.name = new string[]{picture.atlasName};
+        param.callback = LoadCallback;
+        AssetBundleController.LoadObject(param);
+    }
+
+    private void LoadCallback (UnityEngine.Object[] objs) {
+        Debug.Log("SceneItemView LoadCallback");
+        if (objs != null && objs.Length != 0) {
+            GameObject atlas = objs[0] as GameObject;
+            if (atlas == null) {
+                Debug.Log("atlas is null");
+            }
+            thumbnail.atlas = atlas.GetComponent<UIAtlas>();
+            thumbnail.spriteName = pictureId;
         }
     }
 

@@ -697,7 +697,7 @@ public class LogicController {
         dbAccess.CloseSqlConnection();
     }
     
-    public static Picture GetPicture (int pictureId) {
+    public static Picture GetPicture (string pictureId) {
         DBAccess dbAccess = new DBAccess();
         dbAccess.OpenDB(Config.DB_PATH);
         string whereArgs = "WHERE " + Picture.FIELD_PICTURE_ID + "='" + pictureId + "'";

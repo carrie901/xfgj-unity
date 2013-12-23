@@ -22,6 +22,11 @@ public class Config {
 
     #region other
     public const string DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
+
+    public const string TAG_UI = "UI";
+    public const string TAG_SCENE = "Scene";
+    public const string TAG_CAMERA_PATH = "CameraPath";
+    public const string TAG_LOOK_PATH = "LookPath";
     #endregion
 
 
@@ -30,24 +35,26 @@ public class Config {
         DB_PATH = "URI=file:" + Application.persistentDataPath + "/xfgj.sqlite";
         STREAMING_ASSETS = "jar:file://" + Application.dataPath + "!/assets/";
         ASSETBUNDLE_PATH = STREAMING_ASSETS + "Android/";
-        APP_VERSION = "Android";
+        APP_VERSION = "android";
+        ASSET_URL = "http://xfgj-asset-android.u.qiniudn.com/";
 #elif UNITY_IPHONE
         DB_PATH = "Data Source=" + Application.persistentDataPath + "/xfgj.sqlite";
         STREAMING_ASSETS = Application.dataPath + "/Raw/";
         ASSETBUNDLE_PATH = STREAMING_ASSETS + "Ios/";
-        APP_VERSION = "iPhone";
+        APP_VERSION = "iphone" + IosPlugin.GetBundleVersion();
+        ASSET_URL = "http://xfgj-asset-iphone.u.qiniudn.com/";
 #else
         DB_PATH = "Data Source=xfgj.sqlite";
         STREAMING_ASSETS = "file://" + Application.dataPath + "/StreamingAssets/";
         ASSETBUNDLE_PATH = STREAMING_ASSETS + "Unity/";
         APP_VERSION = "Unity";
+        ASSET_URL = "http://xfgj-asset-unity.u.qiniudn.com/";
 #endif
 #if XFGJ_RELEASE
         SERVER_URL = "http://www.xingfuguanjia.com";
 #else
-        SERVER_URL = "http://127.0.0.1:8000";
+        SERVER_URL = "http://192.168.1.101:8000";
 #endif
-        ASSET_URL = "http://asset-20131210.u.qiniudn.com/";
     }
     
 

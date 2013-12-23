@@ -21,7 +21,7 @@ public class DBAccess{
         try {
             dbConnection = new SqliteConnection(connectionString);
             dbConnection.Open();
-            Debug.Log("Connected to db");
+            //Debug.Log("Connected to db");
         }
         catch(Exception e) {
             string temp1 = e.ToString();
@@ -42,14 +42,14 @@ public class DBAccess{
             dbConnection.Close();
         }
         dbConnection = null;
-        Debug.Log("Disconnected from db.");
+        //Debug.Log("Disconnected from db.");
     }
 
     public SqliteDataReader ExecuteQuery (string sqlQuery) {
         if (sqlQuery == null) {
             throw new SqliteException("");
         }
-        Debug.Log(sqlQuery);
+        //Debug.Log(sqlQuery);
         dbCommand = dbConnection.CreateCommand();
         dbCommand.CommandText = sqlQuery;
         reader = dbCommand.ExecuteReader();

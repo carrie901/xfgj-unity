@@ -4,32 +4,44 @@ using LitJson;
 
 public class GetSceneSnapshotCommand : BaseCommand{
 
-    private int sceneId;
+    private List<int> sceneIds;
+    public List<int> SceneIds {
+        set {
+            sceneIds = value;
+        }
+    }
 
-    public GetSceneSnapshotCommand (int sceneId) {
-        this.sceneId = sceneId;
+    private UIDelegate.Update callback;
+    public UIDelegate.Update Callback {
+        set {
+            callback = value;
+        }
     }
 
     public override void execute () {
-        ApiController.GetSceneSnapshot(AppSetting.getInstance().token, sceneId, handle);
+        if (sceneIds == null) {
+            throw new System.ArgumentNullException("sceneIds can't be null");
+        }
+        ApiController.GetSceneSnapshot(AppSetting.getInstance().token, sceneIds, handle);
     }
 
     void handle (string res) {
-        if (res == null) {
+        if (string.IsNullOrEmpty(res)) {
+            if (callback != null) {
+                callback(false);
+            }
             return;
         }
         JsonData jd = JsonMapper.ToObject(res);
         if (jd.Contains(Param.SCENE)) {
-            Scene scene;
-            bool isDeleted;
-            SceneSerializer.ToObject(jd[Param.SCENE].ToJson(), out scene, out isDeleted);
-            if (isDeleted) {
-                LogicController.DeleteScene(scene);
+            List<Scene> updateList;
+            List<Scene> deleteList;
+            SceneSerializer.ToObjects(jd[Param.SCENE].ToJson(), out updateList, out deleteList);
+            if (updateList != null && updateList.Count != 0) {
+                LogicController.ReplaceScenes(updateList);
             }
-            else {
-                List<Scene> list = new List<Scene>();
-                list.Add(scene);
-                LogicController.ReplaceScenes(list);
+            if (deleteList != null && deleteList.Count != 0) {
+                LogicController.DeleteScenes(deleteList);
             }
         }
         if (jd.Contains(Param.PRODUCT)) {
@@ -54,6 +66,9 @@ public class GetSceneSnapshotCommand : BaseCommand{
             if (list != null && list.Count != 0) {
                 LogicController.ReplaceAssets(list);
             }
+        }
+        if (callback != null) {
+            callback(true);
         }
     }
 }

@@ -5,7 +5,7 @@ using LitJson;
 
 public class SceneSerializer
 {
-    private static string STATUS_NORMAL = "normal";
+    //private static string STATUS_NORMAL = "normal";
     private static string STATUS_DELETED = "deleted";
 
 

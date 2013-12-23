@@ -16,7 +16,7 @@ public class ApiCaller : MonoBehaviour {
      * required: app_key
      */
     public void Authorize (RequestParams rp) {
-        string url = Config.SERVER_URL + "/api/authorize";
+        string url = AppSetting.getInstance().serverUrl + "/api/authorize";
         StartCoroutine(NetUtil.Post(url, rp.data, rp.callback));
     }
 
@@ -25,7 +25,7 @@ public class ApiCaller : MonoBehaviour {
      * optional: modified
      */
     public void GetScene (RequestParams rp) {
-        string url = Config.SERVER_URL + "/api/scene/" + rp.data[Param.SCENE_ID];
+        string url = AppSetting.getInstance().serverUrl + "/api/scene/" + rp.data[Param.SCENE_ID];
         url += "?" + Param.TOKEN + "=" + rp.data[Param.TOKEN];
         if (rp.data.ContainsKey(Param.MODIFIED)) {
             url += "&" + Param.MODIFIED + "="  + rp.data[Param.MODIFIED];
@@ -38,7 +38,7 @@ public class ApiCaller : MonoBehaviour {
      * optional: scene_type_id, last_modified
      */
     public void GetScenes (RequestParams rp) {
-        string url = Config.SERVER_URL + "/api/scenes";
+        string url = AppSetting.getInstance().serverUrl + "/api/scenes";
         url += "?" + Param.TOKEN + "=" + rp.data[Param.TOKEN];
         if (rp.data.ContainsKey(Param.SCENE_TYPE_ID)) {
             url += "&" + Param.SCENE_TYPE_ID + "=" + rp.data[Param.SCENE_TYPE_ID];
@@ -53,8 +53,9 @@ public class ApiCaller : MonoBehaviour {
      * required: token, scene_id
      */
     public void GetSceneSnapshot (RequestParams rp) {
-        string url = Config.SERVER_URL + "/api/scene/" + rp.data[Param.SCENE_ID] + "/snapshot";
+        string url = AppSetting.getInstance().serverUrl + "/api/scenes/snapshot";
         url += "?" + Param.TOKEN + "=" + rp.data[Param.TOKEN];
+        url += "&" + Param.SCENE_IDS + "=" + rp.data[Param.SCENE_IDS];
         StartCoroutine(NetUtil.Get(Uri.EscapeUriString(url), rp.callback));
     }
 
@@ -63,7 +64,7 @@ public class ApiCaller : MonoBehaviour {
      * optional: modified
      */
     public void GetSceneType (RequestParams rp) {
-        string url = Config.SERVER_URL + "/api/scene_type/" + rp.data[Param.SCENE_TYPE_ID];
+        string url = AppSetting.getInstance().serverUrl + "/api/scene_type/" + rp.data[Param.SCENE_TYPE_ID];
         url += "?" + Param.TOKEN + "=" + rp.data[Param.TOKEN];
         if (rp.data.ContainsKey(Param.MODIFIED)) {
             url += "&" + Param.MODIFIED + "=" + rp.data[Param.SCENE_TYPE_ID];
@@ -72,7 +73,7 @@ public class ApiCaller : MonoBehaviour {
     }
 
     public void GetAllSceneType (RequestParams rp) {
-        string url = Config.SERVER_URL + "/api/scene_types";
+        string url = AppSetting.getInstance().serverUrl + "/api/scene_types";
         url += "?" + Param.TOKEN + "=" + rp.data[Param.TOKEN];
         StartCoroutine(NetUtil.Get(Uri.EscapeUriString(url), rp.callback));
     }
@@ -81,7 +82,7 @@ public class ApiCaller : MonoBehaviour {
      * required: token, scene_id
      */
     public void GetProductInScene (RequestParams rp) {
-        string url = Config.SERVER_URL + "/api/product_in_scene/" + rp.data[Param.SCENE_ID];
+        string url = AppSetting.getInstance().serverUrl + "/api/product_in_scene/" + rp.data[Param.SCENE_ID];
         url += "?" + Param.TOKEN + "=" + rp.data[Param.TOKEN];
         StartCoroutine(NetUtil.Get(Uri.EscapeUriString(url), rp.callback));
     }
@@ -91,7 +92,7 @@ public class ApiCaller : MonoBehaviour {
      * optional: modified
      */
     public void GetProduct (RequestParams rp) {
-        string url = Config.SERVER_URL + "/api/product/" + rp.data[Param.PRODUCT_ID];
+        string url = AppSetting.getInstance().serverUrl + "/api/product/" + rp.data[Param.PRODUCT_ID];
         url += "?" + Param.TOKEN + "=" + rp.data[Param.TOKEN];
         if (rp.data.ContainsKey(Param.MODIFIED)) {
             url += "&" + Param.MODIFIED + "="  + rp.data[Param.MODIFIED];
@@ -104,7 +105,7 @@ public class ApiCaller : MonoBehaviour {
      * optional: modified
      */
     public void GetItem (RequestParams rp) {
-        string url = Config.SERVER_URL + "/api/item/" + rp.data[Param.NUM_IID];
+        string url = AppSetting.getInstance().serverUrl + "/api/item/" + rp.data[Param.NUM_IID];
         url += "?" + Param.TOKEN + "=" + rp.data[Param.TOKEN];
         if (rp.data.ContainsKey(Param.MODIFIED)) {
             url += "&" + Param.MODIFIED + "="  + rp.data[Param.MODIFIED];
@@ -116,7 +117,7 @@ public class ApiCaller : MonoBehaviour {
      * required: token, product_id
      */
     public void GetItemWithProductId (RequestParams rp) {
-        string url = Config.SERVER_URL + "/api/items_in_product/" + rp.data[Param.PRODUCT_ID];
+        string url = AppSetting.getInstance().serverUrl + "/api/items_in_product/" + rp.data[Param.PRODUCT_ID];
         url += "?" + Param.TOKEN + "=" + rp.data[Param.TOKEN];
         StartCoroutine(NetUtil.Get(Uri.EscapeUriString(url), rp.callback));
     }
@@ -125,7 +126,7 @@ public class ApiCaller : MonoBehaviour {
      * required: token, producer_id
      */
     public void GetProducer (RequestParams rp) {
-        string url = Config.SERVER_URL + "/api/producer/" + rp.data[Param.PRODUCER_ID];
+        string url = AppSetting.getInstance().serverUrl + "/api/producer/" + rp.data[Param.PRODUCER_ID];
         url += "?" + Param.TOKEN + "=" + rp.data[Param.TOKEN];
         StartCoroutine(NetUtil.Get(Uri.EscapeUriString(url), rp.callback));
     }
@@ -134,7 +135,7 @@ public class ApiCaller : MonoBehaviour {
      * required: token, producer_id
      */
     public void GetProductsWithProducerId (RequestParams rp) {
-        string url = Config.SERVER_URL + "/api/products/" + rp.data[Param.PRODUCER_ID];
+        string url = AppSetting.getInstance().serverUrl + "/api/products/" + rp.data[Param.PRODUCER_ID];
         url += "?" + Param.TOKEN + "=" + rp.data[Param.TOKEN];
         StartCoroutine(NetUtil.Get(Uri.EscapeUriString(url), rp.callback));
     }
@@ -143,7 +144,7 @@ public class ApiCaller : MonoBehaviour {
      * required: token, cid
      */
     public void GetCategory (RequestParams rp) {
-        string url = Config.SERVER_URL + "/api/category/" + rp.data[Param.CID];
+        string url = AppSetting.getInstance().serverUrl + "/api/category/" + rp.data[Param.CID];
         url += "?" + Param.TOKEN + "=" + rp.data[Param.TOKEN];
         StartCoroutine(NetUtil.Get(Uri.EscapeUriString(url), rp.callback));
     }
@@ -153,7 +154,7 @@ public class ApiCaller : MonoBehaviour {
      * optional: parent_cid
      */
     public void GetCategorys (RequestParams rp) {
-        string url = Config.SERVER_URL + "/api/categorys";
+        string url = AppSetting.getInstance().serverUrl + "/api/categorys";
         url += "?" + Param.TOKEN + "=" + rp.data[Param.TOKEN];
         if (rp.data.ContainsKey(Param.PARENT_CID)) {
             url += "&" + Param.PARENT_CID + "=" + rp.data[Param.PARENT_CID];
@@ -165,7 +166,14 @@ public class ApiCaller : MonoBehaviour {
      * required: token
      */
     public void GetAppSetting (RequestParams rp) {
-        string url = Config.SERVER_URL + "/api/app";
+        string url = AppSetting.getInstance().serverUrl + "/api/app";
+        url += "?" + Param.TOKEN + "=" + rp.data[Param.TOKEN];
+        StartCoroutine(NetUtil.Get(Uri.EscapeUriString(url), rp.callback));
+    }
+
+
+    public void GetAsset (RequestParams rp) {
+        string url = AppSetting.getInstance().serverUrl + "/api/asset/" + rp.data[Param.ASSET_ID];
         url += "?" + Param.TOKEN + "=" + rp.data[Param.TOKEN];
         StartCoroutine(NetUtil.Get(Uri.EscapeUriString(url), rp.callback));
     }
@@ -177,7 +185,7 @@ public class ApiCaller : MonoBehaviour {
      *           type        atlas or scene
      */
     public void UploadAssetBundle (RequestParams rp) {
-        string url = Config.SERVER_URL + "/api/asset/upload";
+        string url = AppSetting.getInstance().serverUrl + "/api/asset/upload";
         Dictionary<string, string> postFields = new Dictionary<string, string>();
         Dictionary<string, string> postFiles = new Dictionary<string, string>();
         foreach (KeyValuePair<string, string> postArg in rp.data) {

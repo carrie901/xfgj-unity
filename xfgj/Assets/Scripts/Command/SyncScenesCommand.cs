@@ -5,9 +5,10 @@ using System.Collections.Generic;
 public class SyncScenesCommand : BaseCommand {
 
     private UIDelegate.Update callback;
-
-    public SyncScenesCommand (UIDelegate.Update callback) {
-        this.callback = callback;
+    public UIDelegate.Update Callback {
+        set {
+            callback = value;
+        }
     }
 
     public override void execute () {
@@ -21,6 +22,12 @@ public class SyncScenesCommand : BaseCommand {
     }
 
     private void handle (string str) {
+        if (string.IsNullOrEmpty(str)) {
+            if (callback != null) {
+                callback(false);
+            }
+            return;
+        }
         List<Scene> updateList;
         List<Scene> deleteList;
         SceneSerializer.ToObjects(str, out updateList, out deleteList);
@@ -33,7 +40,9 @@ public class SyncScenesCommand : BaseCommand {
             LogicController.DeleteScenes(deleteList);
             result = true;
         }
-        callback(result);
+        if (callback != null) {
+            callback(result);
+        }
     }
 
 }

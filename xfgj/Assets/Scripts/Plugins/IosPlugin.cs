@@ -1,12 +1,9 @@
 using System;
+using System.Runtime.InteropServices;
 
-namespace AssemblyCSharp
-{
-    public class IosPlugin
-    {
-        public IosPlugin ()
-        {
-        }
-    }
+public class IosPlugin {
+
+    [DllImport ("__Internal")]
+    public static extern string GetBundleVersion ();
 }
 
