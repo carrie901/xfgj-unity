@@ -25,8 +25,6 @@ public class Config {
 
     public const string TAG_UI = "UI";
     public const string TAG_SCENE = "Scene";
-    public const string TAG_CAMERA_PATH = "CameraPath";
-    public const string TAG_LOOK_PATH = "LookPath";
     #endregion
 
 

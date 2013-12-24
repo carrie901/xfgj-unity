@@ -34,8 +34,8 @@ public class SceneViewController : MonoBehaviour {
             }*/
             oper = Application.LoadLevelAdditiveAsync("" + scene.sceneId);
         }
-        //UIEventListener.Get(leftBtn).onClick = TurnLeft;
-        //UIEventListener.Get(rightBtn).onClick = TurnRight;
+        UIEventListener.Get(leftBtn).onClick = TurnLeft;
+        UIEventListener.Get(rightBtn).onClick = TurnRight;
     }
 
     void Start () {
@@ -46,8 +46,6 @@ public class SceneViewController : MonoBehaviour {
             NotifyProgress(oper.progress);
             if (oper.isDone) {
                 oper = null;
-                CameraController cc = Camera.main.gameObject.GetComponent<CameraController>();
-                cc.MoveToNext();
             }
         }
     }
@@ -55,7 +53,6 @@ public class SceneViewController : MonoBehaviour {
     #endregion
 
     #region private
-
     private void GetAsset (object obj) {
         if (obj != null) {
             Asset asset = obj as Asset;
@@ -78,6 +75,16 @@ public class SceneViewController : MonoBehaviour {
         if (progress == 1.0f) {
             loadPanel.SetActive(false);
         }
+    }
+
+    private void TurnLeft (GameObject go) {
+        CameraController cc = Camera.main.gameObject.GetComponent<CameraController>();
+        cc.MoveToNext();
+    }
+
+    private void TurnRight (GameObject go) {
+        CameraController cc = Camera.main.gameObject.GetComponent<CameraController>();
+        cc.MoveToPrevious();
     }
     #endregion
 

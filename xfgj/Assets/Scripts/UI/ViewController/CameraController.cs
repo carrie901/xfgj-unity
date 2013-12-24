@@ -3,38 +3,33 @@ using System;
 
 public class CameraController : MonoBehaviour {
 
-    public GameObject camPathGroup;
-    public GameObject lookPathGroup;
     public GameObject lookTarget;
+    public Transform[] cameraPath;
+    public Transform[] lookPath; //lookPath must have the same length
 
-    private Transform[] cameraPath;
-    private Transform[] lookPath;
-    private float percentage;
-
-    private float frontPos = 0.1f;
-    private float topPos = 0.9f;
+    private int curIndex;
+    private bool animating;
 
     #region MonoBehaviour
     void Awake () {
-        InitParams();
     }
-    void OnGUI () {
-        percentage = GUI.VerticalSlider(new Rect(Screen.width-20,20,15,Screen.height-40),percentage,1,0);
-        iTween.PutOnPath(gameObject, cameraPath, percentage);
-        iTween.PutOnPath(lookTarget, lookPath, percentage);
-        transform.LookAt(iTween.PointOnPath(lookPath, percentage));
-     
-        if(GUI.Button(new Rect(5,Screen.height-25,50,20),"front")){
-            SlideTo(frontPos);
-        }
-        if(GUI.Button(new Rect(60,Screen.height-25,50,20),"top")){
-            SlideTo(topPos);
+
+    void Update () {
+        if (!animating) {
+            lookTarget.transform.position = lookPath[curIndex].position;
+            transform.LookAt(lookPath[curIndex]);
         }
     }
 
     void OnDrawGizmos () {
-        InitParams();
-        iTween.DrawPath(cameraPath,Color.magenta);
+        for (int i = 0; i < cameraPath.Length; ++i) {
+            if (i == cameraPath.Length - 1) {
+                iTween.DrawPath(new Transform[]{cameraPath[i], cameraPath[0]}, Color.magenta);
+            }
+            else {
+                iTween.DrawPath(new Transform[]{cameraPath[i], cameraPath[i + 1]}, Color.magenta);
+            }
+        }
         iTween.DrawPath(lookPath,Color.cyan);
         Gizmos.color= Color.black;
         Gizmos.DrawLine(gameObject.transform.position, lookTarget.transform.position);
@@ -42,35 +37,62 @@ public class CameraController : MonoBehaviour {
     #endregion
 
     #region public
-
     public void MoveToNext () {
         Debug.Log("MoveToNext");
+        if (animating) {
+            return;
+        }
+        if (curIndex == cameraPath.Length - 1) {
+            MoveTo(0);
+        }
+        else {
+            MoveTo(curIndex + 1);
+        }
     }
 
     public void MoveToPrevious () {
         Debug.Log("MoveToPrevious");
+        if (animating) {
+            return;
+        }
+        if (curIndex == 0) {
+            MoveTo(cameraPath.Length - 1);
+        }
+        else {
+            MoveTo(curIndex - 1);
+        }
     }
 
     #endregion
 
-    private void InitParams () {
-        cameraPath = new Transform[camPathGroup.transform.childCount];
-        lookPath = new Transform[lookPathGroup.transform.childCount];
-        for (int i = 0; i < camPathGroup.transform.childCount; ++i) {
-            cameraPath[i] = camPathGroup.transform.GetChild(i);
-        }
-        for (int i = 0; i < lookPathGroup.transform.childCount; ++i) {
-            lookPath[i] = lookPathGroup.transform.GetChild(i);
-        }
+    #region private
+    private void MoveTo(int index){
+        Debug.Log("SlideTo " + index + " current " + curIndex);
+        iTween.Stop(gameObject);
+        Transform[] path = new Transform[2];
+        path[0] = cameraPath[curIndex];
+        path[1] = cameraPath[index];
+        iTween.MoveTo(gameObject, iTween.Hash("position", cameraPath[index],
+                                              "path", path,
+                                              "movetopath", false,
+                                              "looktarget", lookPath[index],
+                                              "time", 2.0f,
+                                              "onstart", "AnimStart",
+                                              "onstartparams", index,
+                                              "oncomplete", "AnimComplete",
+                                              "oncompleteparams", index));
     }
 
-    void SlideTo(float position){
-        iTween.Stop(gameObject);
-        iTween.ValueTo(gameObject,iTween.Hash("from",percentage,"to",position,"time",2,"easetype",iTween.EaseType.easeInOutCubic,"onupdate","SlidePercentage"));
+    private void AnimStart(int index) {
+        animating = true;
+        lookTarget.transform.position = lookPath[index].position;
     }
  
-    void SlidePercentage(float p){
-        percentage=p;
+    private void AnimComplete(int index){
+        Debug.Log("AnimComplete called");
+        curIndex = index;
+        animating = false;
     }
+    #endregion
 }
 
