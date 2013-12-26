@@ -74,17 +74,18 @@ public class SceneViewController : MonoBehaviour {
         Debug.Log("Loading progress is " + progress);
         if (progress == 1.0f) {
             loadPanel.SetActive(false);
+            GameObject roamCamera = GameObject.FindGameObjectWithTag(Config.TAG_ROAM_CAMERA);
+            if (roamCamera != null) {
+                CameraRoamController cc = roamCamera.GetComponent<CameraRoamController>();
+                cc.Roam();
+            }
         }
     }
 
     private void TurnLeft (GameObject go) {
-        CameraController cc = Camera.main.gameObject.GetComponent<CameraController>();
-        cc.MoveToNext();
     }
 
     private void TurnRight (GameObject go) {
-        CameraController cc = Camera.main.gameObject.GetComponent<CameraController>();
-        cc.MoveToPrevious();
     }
     #endregion
 

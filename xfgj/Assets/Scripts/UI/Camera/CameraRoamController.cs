@@ -1,11 +1,10 @@
 using UnityEngine;
 using System;
 
-public class CameraController : MonoBehaviour {
+public class CameraRoamController : MonoBehaviour {
 
-    public GameObject lookTarget;
+    public Transform lookTarget;
     public Transform[] cameraPath;
-    public Transform[] lookPath; //lookPath must have the same length
 
     private int curIndex;
     private bool animating;
@@ -16,8 +15,7 @@ public class CameraController : MonoBehaviour {
 
     void Update () {
         if (!animating) {
-            lookTarget.transform.position = lookPath[curIndex].position;
-            transform.LookAt(lookPath[curIndex]);
+            transform.LookAt(lookTarget);
         }
     }
 
@@ -30,7 +28,6 @@ public class CameraController : MonoBehaviour {
                 iTween.DrawPath(new Transform[]{cameraPath[i], cameraPath[i + 1]}, Color.magenta);
             }
         }
-        iTween.DrawPath(lookPath,Color.cyan);
         Gizmos.color= Color.black;
         Gizmos.DrawLine(gameObject.transform.position, lookTarget.transform.position);
     }
@@ -63,10 +60,20 @@ public class CameraController : MonoBehaviour {
         }
     }
 
+    public void Roam () {
+        iTween.Stop(gameObject);
+        iTween.MoveFrom(gameObject, iTween.Hash("position", cameraPath[0],
+                                                "path", cameraPath,
+                                                "time", 10.0f,
+                                                "looktarget", lookTarget,
+                                                "onstart", "RoamStart",
+                                                "oncomplete", "RoamComplete"));
+    }
+
     #endregion
 
     #region private
-    private void MoveTo(int index){
+    private void MoveTo (int index){
         Debug.Log("SlideTo " + index + " current " + curIndex);
         iTween.Stop(gameObject);
         Transform[] path = new Transform[2];
@@ -75,23 +82,36 @@ public class CameraController : MonoBehaviour {
         iTween.MoveTo(gameObject, iTween.Hash("position", cameraPath[index],
                                               "path", path,
                                               "movetopath", false,
-                                              "looktarget", lookPath[index],
+                                              "looktarget", lookTarget,
                                               "time", 2.0f,
-                                              "onstart", "AnimStart",
+                                              "onstart", "MoveAnimStart",
                                               "onstartparams", index,
-                                              "oncomplete", "AnimComplete",
+                                              "oncomplete", "MoveAnimComplete",
                                               "oncompleteparams", index));
     }
 
-    private void AnimStart(int index) {
+    private void MoveAnimStart (int index) {
         animating = true;
-        lookTarget.transform.position = lookPath[index].position;
     }
  
-    private void AnimComplete(int index){
+    private void MoveAnimComplete (int index){
         Debug.Log("AnimComplete called");
         curIndex = index;
         animating = false;
+    }
+
+    private void RoamStart () {
+        TBOrbit comp = Camera.main.GetComponent<TBOrbit>();
+        if (comp != null) {
+            comp.enabled = true;
+        }
+    }
+
+    private void RoamComplete () {
+        gameObject.camera.depth = -1;
+        Camera.main.depth = 1;
+        Camera.main.transform.position = transform.position;
+        Camera.main.transform.rotation = transform.rotation;
     }
     #endregion
 }
