@@ -101,17 +101,11 @@ public class CameraRoamController : MonoBehaviour {
     }
 
     private void RoamStart () {
-        TBOrbit comp = Camera.main.GetComponent<TBOrbit>();
-        if (comp != null) {
-            comp.enabled = true;
-        }
     }
 
     private void RoamComplete () {
         gameObject.camera.depth = -1;
         Camera.main.depth = 1;
-        Camera.main.transform.position = transform.position;
-        Camera.main.transform.rotation = transform.rotation;
     }
     #endregion
 }

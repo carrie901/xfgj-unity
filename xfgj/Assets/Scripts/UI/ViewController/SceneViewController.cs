@@ -5,6 +5,7 @@ public class SceneViewController : MonoBehaviour {
 
     public GameObject root;
     public GameObject loadPanel;
+    public GameObject productPanel;
     public int sceneId;
 
     public GameObject leftBtn;
@@ -52,7 +53,7 @@ public class SceneViewController : MonoBehaviour {
 
     #endregion
 
-    #region private
+    #region delegate
     private void GetAsset (object obj) {
         if (obj != null) {
             Asset asset = obj as Asset;
@@ -79,6 +80,14 @@ public class SceneViewController : MonoBehaviour {
                 CameraRoamController cc = roamCamera.GetComponent<CameraRoamController>();
                 cc.Roam();
             }
+            GameObject gesture = GameObject.FindGameObjectWithTag(Config.TAG_GESTURE);
+            if (gesture != null) {
+                TapGestureHandle comp = gesture.GetComponent<TapGestureHandle>();
+                if (comp != null) {
+                    comp.SelectCallback = SelectObject;
+                    Debug.Log("set SelectCallback");
+                }
+            }
         }
     }
 
@@ -86,6 +95,11 @@ public class SceneViewController : MonoBehaviour {
     }
 
     private void TurnRight (GameObject go) {
+    }
+
+    private void SelectObject (GameObject go) {
+        Debug.Log("SceneViewController SelectObject " + go.name);
+        productPanel.SetActive(true);
     }
     #endregion
 

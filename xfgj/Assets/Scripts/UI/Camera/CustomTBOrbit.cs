@@ -257,15 +257,9 @@ public class CustomTBOrbit : MonoBehaviour
     {
         if( smoothMotion )
         {
-            Debug.Log("distance " + distance + " IdealDistance " + IdealDistance);
-            Debug.Log("yaw " + yaw + " IdealYaw " + IdealYaw);
-            Debug.Log("pitch " + pitch + " IdealPitch " + IdealPitch);
             distance = Mathf.Lerp( distance, IdealDistance, Time.deltaTime * smoothZoomSpeed );
             yaw = Mathf.Lerp( yaw, IdealYaw, Time.deltaTime * smoothOrbitSpeed );
             pitch = Mathf.LerpAngle( pitch, IdealPitch, Time.deltaTime * smoothOrbitSpeed );
-            Debug.Log("calculate distance " + distance);
-            Debug.Log("calculate yaw " + yaw);
-            Debug.Log("calculate pitch " + pitch);
         }
         else
         {
