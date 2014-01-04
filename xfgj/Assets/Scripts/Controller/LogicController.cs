@@ -18,6 +18,7 @@ public class LogicController {
         dbAccess.CreateTable(Traderate.CREATE_SQL);
         dbAccess.CreateTable(Picture.CREATE_SQL);
         dbAccess.CreateTable(Asset.CREATE_SQL);
+        dbAccess.CreateTable(Recommend.CREATE_SQL);
         dbAccess.CloseSqlConnection();
     }
     
@@ -96,8 +97,8 @@ public class LogicController {
             category = new Category(reader.GetInt32(reader.GetOrdinal(Category.FIELD_CID)),
                                     reader.GetString(reader.GetOrdinal(Category.FIELD_NAME)),
                                     reader.GetInt32(reader.GetOrdinal(Category.FIELD_PARENT_CID)),
-                                    reader.GetBoolean(reader.GetOrdinal(Category.FIELD_IS_PARENT)),
-                                    reader.GetBoolean(reader.GetOrdinal(Category.FIELD_USABLE)),
+                                    reader.GetInt32(reader.GetOrdinal(Category.FIELD_IS_PARENT)) == 0 ? false : true,
+                                    reader.GetInt32(reader.GetOrdinal(Category.FIELD_USABLE)) == 0 ? false : true,
                                     StringUtil.StringToDateTime(reader.GetString(reader.GetOrdinal(Category.FIELD_MODIFIED))));
         }
         reader.Close();
@@ -358,10 +359,10 @@ public class LogicController {
         dbAccess.OpenDB(Config.DB_PATH);
         string[] cols = new string[] {Scene.FIELD_SCENE_ID, Scene.FIELD_NAME, Scene.FIELD_TYPE_ID, 
                                       Scene.FIELD_PICTURE_ID, Scene.FIELD_DETAILS, Scene.FIELD_MODIFIED,
-                                      Scene.FIELD_ASSET_ID, Scene.FIELD_PRODUCTS};
+                                      Scene.FIELD_ASSET_ID, Scene.FIELD_PRODUCTS, Scene.FIELD_FAVOURITE};
         object[] values = new object[] {scene.sceneId, scene.name, scene.typeId,
                                         scene.pictureId, scene.details, StringUtil.DateTimeToString(scene.modified),
-                                        scene.assetId, scene.products};
+                                        scene.assetId, scene.products, scene.favourite ? 1 : 0};
         dbAccess.Insert(Scene.TABLE_NAME, cols, values);
         dbAccess.CloseSqlConnection();
     }
@@ -374,16 +375,41 @@ public class LogicController {
         dbAccess.OpenDB(Config.DB_PATH);
         string[] cols = new string[] {Scene.FIELD_NAME, Scene.FIELD_TYPE_ID,
                                       Scene.FIELD_PICTURE_ID, Scene.FIELD_DETAILS, Scene.FIELD_MODIFIED,
-                                      Scene.FIELD_ASSET_ID, Scene.FIELD_PRODUCTS};
+                                      Scene.FIELD_ASSET_ID, Scene.FIELD_PRODUCTS, Scene.FIELD_FAVOURITE};
         object[] values = new object[] {scene.name, scene.typeId,
                                         scene.pictureId, scene.details, StringUtil.DateTimeToString(scene.modified),
-                                        scene.assetId, scene.products};
+                                        scene.assetId, scene.products, scene.favourite ? 1 : 0};
         string whereArgs = "WHERE " + Scene.FIELD_SCENE_ID + "=" + scene.sceneId;
         dbAccess.Update(Scene.TABLE_NAME, cols, values, whereArgs);
         dbAccess.CloseSqlConnection();
     }
 
     public static void ReplaceScenes (List<Scene> list) {
+        if (list == null || list.Count == 0) {
+            throw new SqliteException("list can't be empty");
+        }
+        DBAccess dbAccess = new DBAccess();
+        dbAccess.OpenDB(Config.DB_PATH);
+        string[] cols = new string[] {Scene.FIELD_SCENE_ID, Scene.FIELD_NAME, Scene.FIELD_TYPE_ID, 
+                                      Scene.FIELD_PICTURE_ID, Scene.FIELD_DETAILS, Scene.FIELD_MODIFIED,
+                                      Scene.FIELD_ASSET_ID, Scene.FIELD_PRODUCTS, Scene.FIELD_FAVOURITE};
+        object[,] values = new object[list.Count, cols.Length];
+        for (int i = 0; i < list.Count; ++i) {
+            values[i, 0] = list[i].sceneId;
+            values[i, 1] = list[i].name;
+            values[i, 2] = list[i].typeId;
+            values[i, 3] = list[i].pictureId;
+            values[i, 4] = list[i].details;
+            values[i, 5] = StringUtil.DateTimeToString(list[i].modified);
+            values[i, 6] = list[i].assetId;
+            values[i, 7] = list[i].products;
+            values[i, 8] = list[i].favourite ? 1 : 0;
+        }
+        dbAccess.ReplaceInBatch(Scene.TABLE_NAME, cols, values);
+        dbAccess.CloseSqlConnection();
+    }
+
+    public static void ReplaceScenesIgnoreFavourite (List<Scene> list) {
         if (list == null || list.Count == 0) {
             throw new SqliteException("list can't be empty");
         }
@@ -453,7 +479,8 @@ public class LogicController {
                             reader.GetString(reader.GetOrdinal(Scene.FIELD_DETAILS)),
                             StringUtil.StringToDateTime(reader.GetString(reader.GetOrdinal(Scene.FIELD_MODIFIED))),
                             reader.GetInt32(reader.GetOrdinal(Scene.FIELD_ASSET_ID)),
-                            reader.GetString(reader.GetOrdinal(Scene.FIELD_PRODUCTS)));
+                            reader.GetString(reader.GetOrdinal(Scene.FIELD_PRODUCTS)),
+                            reader.GetInt32(reader.GetOrdinal(Scene.FIELD_FAVOURITE)) == 0 ? false : true);
         }
         reader.Close();
         dbAccess.CloseSqlConnection();
@@ -474,7 +501,31 @@ public class LogicController {
                                     reader.GetString(reader.GetOrdinal(Scene.FIELD_DETAILS)),
                                     StringUtil.StringToDateTime(reader.GetString(reader.GetOrdinal(Scene.FIELD_MODIFIED))),
                                     reader.GetInt32(reader.GetOrdinal(Scene.FIELD_ASSET_ID)),
-                                    reader.GetString(reader.GetOrdinal(Scene.FIELD_PRODUCTS))));
+                                    reader.GetString(reader.GetOrdinal(Scene.FIELD_PRODUCTS)),
+                                    reader.GetInt32(reader.GetOrdinal(Scene.FIELD_FAVOURITE)) == 0 ? false : true));
+        }
+        reader.Close();
+        dbAccess.CloseSqlConnection();
+        return sceneList;
+    }
+
+    public static List<Scene> GetScenesBySceneType(int sceneTypeId, int offset, int limit) {
+        DBAccess dbAccess = new DBAccess();
+        dbAccess.OpenDB(Config.DB_PATH);
+        string whereArgs = "WHERE " + Scene.FIELD_TYPE_ID + "=" + sceneTypeId;
+        string limitArgs = "LIMIT " + offset + ", " + limit;
+        SqliteDataReader reader = dbAccess.Query(Scene.TABLE_NAME, "*", whereArgs, null, limitArgs);
+        List<Scene> sceneList = new List<Scene>();
+        while (reader.Read()) {
+            sceneList.Add(new Scene(reader.GetInt32(reader.GetOrdinal(Scene.FIELD_SCENE_ID)),
+                                    reader.GetString(reader.GetOrdinal(Scene.FIELD_NAME)),
+                                    reader.GetInt32(reader.GetOrdinal(Scene.FIELD_TYPE_ID)),
+                                    reader.GetString(reader.GetOrdinal(Scene.FIELD_PICTURE_ID)),
+                                    reader.GetString(reader.GetOrdinal(Scene.FIELD_DETAILS)),
+                                    StringUtil.StringToDateTime(reader.GetString(reader.GetOrdinal(Scene.FIELD_MODIFIED))),
+                                    reader.GetInt32(reader.GetOrdinal(Scene.FIELD_ASSET_ID)),
+                                    reader.GetString(reader.GetOrdinal(Scene.FIELD_PRODUCTS)),
+                                    reader.GetInt32(reader.GetOrdinal(Scene.FIELD_FAVOURITE)) == 0 ? false : true));
         }
         reader.Close();
         dbAccess.CloseSqlConnection();
@@ -490,17 +541,63 @@ public class LogicController {
         Scene scene = null;
         while (reader.Read()) {
             scene = new Scene(reader.GetInt32(reader.GetOrdinal(Scene.FIELD_SCENE_ID)),
+                              reader.GetString(reader.GetOrdinal(Scene.FIELD_NAME)),
+                              reader.GetInt32(reader.GetOrdinal(Scene.FIELD_TYPE_ID)),
+                              reader.GetString(reader.GetOrdinal(Scene.FIELD_PICTURE_ID)),
+                              reader.GetString(reader.GetOrdinal(Scene.FIELD_DETAILS)),
+                              StringUtil.StringToDateTime(reader.GetString(reader.GetOrdinal(Scene.FIELD_MODIFIED))),
+                              reader.GetInt32(reader.GetOrdinal(Scene.FIELD_ASSET_ID)),
+                              reader.GetString(reader.GetOrdinal(Scene.FIELD_PRODUCTS)),
+                              reader.GetInt32(reader.GetOrdinal(Scene.FIELD_FAVOURITE)) == 0 ? false : true);
+        }
+        reader.Close();
+        dbAccess.CloseSqlConnection();
+        return scene;
+    }
+
+    public static List<Scene> GetFavouriteScenes () {
+        DBAccess dbAccess = new DBAccess();
+        dbAccess.OpenDB(Config.DB_PATH);
+        string whereArgs = "WHERE " + Scene.FIELD_FAVOURITE + "=1";
+        SqliteDataReader reader = dbAccess.Query(Scene.TABLE_NAME, "*", whereArgs);
+        List<Scene> sceneList = new List<Scene>();
+        while (reader.Read()) {
+            sceneList.Add(new Scene(reader.GetInt32(reader.GetOrdinal(Scene.FIELD_SCENE_ID)),
                                     reader.GetString(reader.GetOrdinal(Scene.FIELD_NAME)),
                                     reader.GetInt32(reader.GetOrdinal(Scene.FIELD_TYPE_ID)),
                                     reader.GetString(reader.GetOrdinal(Scene.FIELD_PICTURE_ID)),
                                     reader.GetString(reader.GetOrdinal(Scene.FIELD_DETAILS)),
                                     StringUtil.StringToDateTime(reader.GetString(reader.GetOrdinal(Scene.FIELD_MODIFIED))),
                                     reader.GetInt32(reader.GetOrdinal(Scene.FIELD_ASSET_ID)),
-                                    reader.GetString(reader.GetOrdinal(Scene.FIELD_PRODUCTS)));
+                                    reader.GetString(reader.GetOrdinal(Scene.FIELD_PRODUCTS)),
+                                    reader.GetInt32(reader.GetOrdinal(Scene.FIELD_FAVOURITE)) == 0 ? false : true));
         }
         reader.Close();
         dbAccess.CloseSqlConnection();
-        return scene;
+        return sceneList;
+    }
+
+    public static List<Scene> GetFavouriteScenes (int offset, int limit) {
+        DBAccess dbAccess = new DBAccess();
+        dbAccess.OpenDB(Config.DB_PATH);
+        string whereArgs = "WHERE " + Scene.FIELD_FAVOURITE + "=1";
+        string limitArgs = "LIMIT " + offset + ", " + limit;
+        SqliteDataReader reader = dbAccess.Query(Scene.TABLE_NAME, "*", whereArgs, null, limitArgs);
+        List<Scene> sceneList = new List<Scene>();
+        while (reader.Read()) {
+            sceneList.Add(new Scene(reader.GetInt32(reader.GetOrdinal(Scene.FIELD_SCENE_ID)),
+                                    reader.GetString(reader.GetOrdinal(Scene.FIELD_NAME)),
+                                    reader.GetInt32(reader.GetOrdinal(Scene.FIELD_TYPE_ID)),
+                                    reader.GetString(reader.GetOrdinal(Scene.FIELD_PICTURE_ID)),
+                                    reader.GetString(reader.GetOrdinal(Scene.FIELD_DETAILS)),
+                                    StringUtil.StringToDateTime(reader.GetString(reader.GetOrdinal(Scene.FIELD_MODIFIED))),
+                                    reader.GetInt32(reader.GetOrdinal(Scene.FIELD_ASSET_ID)),
+                                    reader.GetString(reader.GetOrdinal(Scene.FIELD_PRODUCTS)),
+                                    reader.GetInt32(reader.GetOrdinal(Scene.FIELD_FAVOURITE)) == 0 ? false : true));
+        }
+        reader.Close();
+        dbAccess.CloseSqlConnection();
+        return sceneList;
     }
     #endregion
     
@@ -512,8 +609,9 @@ public class LogicController {
         DBAccess dbAccess = new DBAccess();
         dbAccess.OpenDB(Config.DB_PATH);
         string[] cols = new string[] {SceneType.FIELD_TYPE_ID, SceneType.FIELD_NAME,
-                                      SceneType.FIELD_MODIFIED};
-        object[] values = new object[] {sceneType.typeId, sceneType.name, StringUtil.DateTimeToString(sceneType.modified)};
+                                      SceneType.FIELD_PICTURE_ID, SceneType.FIELD_MODIFIED};
+        object[] values = new object[] {sceneType.typeId, sceneType.name, sceneType.pictureId,
+                                        StringUtil.DateTimeToString(sceneType.modified)};
         dbAccess.Insert(SceneType.TABLE_NAME, cols, values);
         dbAccess.CloseSqlConnection();
     }
@@ -524,8 +622,9 @@ public class LogicController {
         }
         DBAccess dbAccess = new DBAccess();
         dbAccess.OpenDB(Config.DB_PATH);
-        string[] cols = new string[] {SceneType.FIELD_NAME, SceneType.FIELD_MODIFIED};
-        object[] values = new object[] {sceneType.name, StringUtil.DateTimeToString(sceneType.modified)};
+        string[] cols = new string[] {SceneType.FIELD_NAME, SceneType.FIELD_PICTURE_ID, SceneType.FIELD_MODIFIED};
+        object[] values = new object[] {sceneType.name, sceneType.pictureId,
+                                        StringUtil.DateTimeToString(sceneType.modified)};
         string whereArgs = "WHERE " + SceneType.FIELD_TYPE_ID + "=" + sceneType.typeId;
         dbAccess.Update(SceneType.TABLE_NAME, cols, values, whereArgs);
         dbAccess.CloseSqlConnection();
@@ -537,12 +636,14 @@ public class LogicController {
         }
         DBAccess dbAccess = new DBAccess();
         dbAccess.OpenDB(Config.DB_PATH);
-        string[] cols = new string[] {SceneType.FIELD_TYPE_ID, SceneType.FIELD_NAME, SceneType.FIELD_MODIFIED};
+        string[] cols = new string[] {SceneType.FIELD_TYPE_ID, SceneType.FIELD_NAME,
+                                      SceneType.FIELD_PICTURE_ID, SceneType.FIELD_MODIFIED};
         object[,] values = new object[list.Count, cols.Length];
         for (int i = 0; i < list.Count; ++i) {
             values[i, 0] = list[i].typeId;
             values[i, 1] = list[i].name;
-            values[i, 2] = StringUtil.DateTimeToString(list[i].modified);
+            values[i, 2] = list[i].pictureId;
+            values[i, 3] = StringUtil.DateTimeToString(list[i].modified);
         }
         dbAccess.ReplaceInBatch(SceneType.TABLE_NAME, cols, values);
         dbAccess.CloseSqlConnection();
@@ -558,6 +659,27 @@ public class LogicController {
         dbAccess.Delete(SceneType.TABLE_NAME, whereArgs);
         dbAccess.CloseSqlConnection();
     }
+
+    public static void DeleteSceneTypes (List<SceneType> list) {
+        if (list == null || list.Count == 0) {
+            throw new SqliteException("scenetype list can't be empty");
+        }
+        DBAccess dbAccess = new DBAccess();
+        dbAccess.OpenDB(Config.DB_PATH);
+        StringBuilder whereArgs = new StringBuilder();
+        whereArgs.Append("WHERE " + SceneType.FIELD_TYPE_ID + " in (");
+        for (int i = 0; i < list.Count; ++i) {
+            whereArgs.Append(list[i].typeId);
+            if (i == list.Count - 1) {
+                whereArgs.Append(")");
+            }
+            else {
+                whereArgs.Append(",");
+            }
+        }
+        dbAccess.Delete(SceneType.TABLE_NAME, whereArgs.ToString());
+        dbAccess.CloseSqlConnection();
+    }
     
     public static SceneType GetSceneType (int typeId) {
         DBAccess dbAccess = new DBAccess();
@@ -568,11 +690,28 @@ public class LogicController {
         while (reader.Read()) {
             sceneType = new SceneType(reader.GetInt32(reader.GetOrdinal(SceneType.FIELD_TYPE_ID)),
                             reader.GetString(reader.GetOrdinal(SceneType.FIELD_NAME)),
+                            reader.GetString(reader.GetOrdinal(SceneType.FIELD_PICTURE_ID)),
                             StringUtil.StringToDateTime(reader.GetString(reader.GetOrdinal(SceneType.FIELD_MODIFIED))));
         }
         reader.Close();
         dbAccess.CloseSqlConnection();
         return sceneType;
+    }
+
+    public static List<SceneType> GetSceneTypes () {
+        DBAccess dbAccess = new DBAccess();
+        dbAccess.OpenDB(Config.DB_PATH);
+        SqliteDataReader reader = dbAccess.Query(SceneType.TABLE_NAME, "*", null);
+        List<SceneType> list = new List<SceneType>();
+        while (reader.Read()) {
+            list.Add(new SceneType(reader.GetInt32(reader.GetOrdinal(SceneType.FIELD_TYPE_ID)),
+                            reader.GetString(reader.GetOrdinal(SceneType.FIELD_NAME)),
+                            reader.GetString(reader.GetOrdinal(SceneType.FIELD_PICTURE_ID)),
+                            StringUtil.StringToDateTime(reader.GetString(reader.GetOrdinal(SceneType.FIELD_MODIFIED)))));
+        }
+        reader.Close();
+        dbAccess.CloseSqlConnection();
+        return list;
     }
     #endregion
     
@@ -782,6 +921,114 @@ public class LogicController {
         reader.Close();
         dbAccess.CloseSqlConnection();
         return asset;
+    }
+    #endregion
+
+    #region Recommend
+    public static void InsertRecommend (Recommend recommend) {
+        if (recommend == null) {
+            throw new SqliteException("recommend can't be null");
+        }
+        DBAccess dbAccess = new DBAccess();
+        dbAccess.OpenDB(Config.DB_PATH);
+        string[] cols = new string[] {Recommend.FIELD_RECOMMEND_ID, Recommend.FIELD_PICTURE_ID,
+                                      Recommend.FIELD_URL, Recommend.FIELD_START_TIME,
+                                      Recommend.FIELD_END_TIME, Recommend.FIELD_POSITION};
+        object[] values = new object[] {recommend.recommendId, recommend.pictureId,
+                                        recommend.url, recommend.startTime,
+                                        recommend.endTime, recommend.position};
+        dbAccess.Insert(Recommend.TABLE_NAME, cols, values);
+        dbAccess.CloseSqlConnection();
+    }
+
+    public static void UpdateRecommend (Recommend recommend) {
+        if (recommend == null) {
+            throw new SqliteException("recommend can't be null");
+        }
+        DBAccess dbAccess = new DBAccess();
+        dbAccess.OpenDB(Config.DB_PATH);
+        string[] cols = new string[] {Recommend.FIELD_PICTURE_ID,
+                                      Recommend.FIELD_URL, Recommend.FIELD_START_TIME,
+                                      Recommend.FIELD_END_TIME, Recommend.FIELD_POSITION};
+        object[] values = new object[] {recommend.pictureId,
+                                        recommend.url, recommend.startTime,
+                                        recommend.endTime, recommend.position};
+        string whereArgs = "WHERE " + Recommend.FIELD_RECOMMEND_ID + "=" + recommend.recommendId;
+        dbAccess.Update(Recommend.TABLE_NAME, cols, values, whereArgs);
+        dbAccess.CloseSqlConnection();
+    }
+
+    public static void ReplaceRecommends (List<Recommend> list) {
+        if (list == null || list.Count == 0) {
+            throw new SqliteException("list can't be empty");
+        }
+        DBAccess dbAccess = new DBAccess();
+        dbAccess.OpenDB(Config.DB_PATH);
+        string[] cols = new string[] {Recommend.FIELD_RECOMMEND_ID, Recommend.FIELD_PICTURE_ID,
+                                      Recommend.FIELD_URL, Recommend.FIELD_START_TIME,
+                                      Recommend.FIELD_END_TIME, Recommend.FIELD_POSITION};
+        object[,] values = new object[list.Count, cols.Length];
+        for (int i = 0; i < list.Count; ++i) {
+            values[i, 0] = list[i].recommendId;
+            values[i, 1] = list[i].pictureId;
+            values[i, 2] = list[i].url;
+            values[i, 3] = list[i].startTime;
+            values[i, 4] = list[i].endTime;
+            values[i, 5] = list[i].position;
+        }
+        dbAccess.ReplaceInBatch(Recommend.TABLE_NAME, cols, values);
+        dbAccess.CloseSqlConnection();
+    }
+
+    public static void DeleteRecommend (Recommend recommend) {
+        if (recommend == null) {
+            throw new SqliteException("recommend can't be null");
+        }
+        DBAccess dbAccess = new DBAccess();
+        dbAccess.OpenDB(Config.DB_PATH);
+        string whereArgs = "WHERE " + Recommend.FIELD_RECOMMEND_ID + "=" + recommend.recommendId;
+        dbAccess.Delete(Recommend.TABLE_NAME, whereArgs);
+        dbAccess.CloseSqlConnection();
+    }
+
+    public static Recommend GetRecommend (int recommendId) {
+        DBAccess dbAccess = new DBAccess();
+        dbAccess.OpenDB(Config.DB_PATH);
+        string whereArgs = "WHERE " + Recommend.FIELD_RECOMMEND_ID + "=" + recommendId;
+        SqliteDataReader reader = dbAccess.Query(Recommend.TABLE_NAME, "*", whereArgs);
+        Recommend recommend = null;
+        while (reader.Read()) {
+            recommend = new Recommend(reader.GetInt32(reader.GetOrdinal(Recommend.FIELD_RECOMMEND_ID)),
+                            reader.GetString(reader.GetOrdinal(Recommend.FIELD_PICTURE_ID)),
+                            reader.GetString(reader.GetOrdinal(Recommend.FIELD_URL)),
+                            StringUtil.StringToDateTime(reader.GetString(reader.GetOrdinal(Recommend.FIELD_START_TIME))),
+                            StringUtil.StringToDateTime(reader.GetString(reader.GetOrdinal(Recommend.FIELD_END_TIME))),
+                            reader.GetString(reader.GetOrdinal(Recommend.FIELD_POSITION)));
+        }
+        reader.Close();
+        dbAccess.CloseSqlConnection();
+        return recommend;
+    }
+
+    public static void DeleteRecommends (List<Recommend> list) {
+        if (list == null || list.Count == 0) {
+            throw new SqliteException("list can't be empty");
+        }
+        DBAccess dbAccess = new DBAccess();
+        dbAccess.OpenDB(Config.DB_PATH);
+        StringBuilder whereArgs = new StringBuilder();
+        whereArgs.Append("WHERE " + Recommend.FIELD_RECOMMEND_ID + " in (");
+        for (int i = 0; i < list.Count; ++i) {
+            whereArgs.Append(list[i].recommendId);
+            if (i == list.Count - 1) {
+                whereArgs.Append(")");
+            }
+            else {
+                whereArgs.Append(",");
+            }
+        }
+        dbAccess.Delete(Recommend.TABLE_NAME, whereArgs.ToString());
+        dbAccess.CloseSqlConnection();
     }
     #endregion
 }

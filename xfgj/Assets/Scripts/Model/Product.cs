@@ -2,14 +2,14 @@
 
 public class Product {
     
-    public readonly int productId;
-    public readonly int producerId;
-    public readonly string name;
-    public readonly int cid;
-    public readonly string size;
-    public readonly string pictureId;
-    public readonly string details;
-    public readonly DateTime modified;
+    public int productId;
+    public int producerId;
+    public string name;
+    public int cid;
+    public string size;
+    public string pictureId;
+    public string details;
+    public DateTime modified;
 
     public static readonly string TABLE_NAME = "product";
     public static readonly string FIELD_PRODUCT_ID = "product_id";

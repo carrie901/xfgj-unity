@@ -3,10 +3,10 @@ using System.Collections;
 
 public class Producer {
 
-    public readonly int producerId;
-    public readonly string name;
-    public readonly string details;
-    public readonly DateTime modified;
+    public int producerId;
+    public string name;
+    public string details;
+    public DateTime modified;
     
     public static readonly string TABLE_NAME = "producer";
     public static readonly string FIELD_PRODUCER_ID = "producer_id";

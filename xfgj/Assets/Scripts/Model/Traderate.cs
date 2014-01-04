@@ -35,14 +35,14 @@ public class Traderate {
         return RATE_RESULT.BAD;
     }
     
-    public readonly int tid;
-    public readonly long numIid;
-    public readonly ROLE role;
-    public readonly string nick;
-    public readonly RATE_RESULT result;
-    public readonly DateTime created;
-    public readonly string content;
-    public readonly string reply;
+    public int tid;
+    public long numIid;
+    public ROLE role;
+    public string nick;
+    public RATE_RESULT result;
+    public DateTime created;
+    public string content;
+    public string reply;
     
     public static readonly string TABLE_NAME = "traderate";
     public static readonly string FIELD_TID = "tid";

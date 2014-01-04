@@ -74,7 +74,7 @@ public class ApiTest : UUnitTestCase
 
     void GetSceneTypeCallback(string res) {
         JsonData jd =JsonMapper.ToObject(res);
-        SceneType sceneType = new SceneType((int)(jd[Param.TYPE_ID]), (string)(jd[Param.NAME]),
+        SceneType sceneType = new SceneType((int)(jd[Param.TYPE_ID]), (string)(jd[Param.NAME]), (string)jd[Param.PICTURE_ID],
                                             StringUtil.StringToDateTime((string)(jd[Param.MODIFIED])));
         UUnitAssert.Equals(100001, sceneType.typeId);
     }
@@ -92,7 +92,7 @@ public class ApiTest : UUnitTestCase
     void GetAllSceneTypeCallback(string res) {
         JsonData jd =JsonMapper.ToObject(res);
         UUnitAssert.True(jd.IsArray);
-        SceneType sceneType = new SceneType((int)(jd[0][Param.TYPE_ID]), (string)(jd[0][Param.NAME]),
+        SceneType sceneType = new SceneType((int)(jd[0][Param.TYPE_ID]), (string)(jd[0][Param.NAME]), (string)jd[Param.PICTURE_ID],
                                             StringUtil.StringToDateTime((string)(jd[0][Param.MODIFIED])));
         UUnitAssert.NotNull(sceneType);
     }

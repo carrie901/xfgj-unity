@@ -49,5 +49,26 @@ public class AppSetting
         }
     }
 
+    private const string WIFI_LIMIT = "wifi_limit";
+    public bool wifiLimit {
+        get {
+            return PlayerPrefs.GetInt(WIFI_LIMIT, 1) == 1 ? true : false;
+        }
+
+        set {
+            PlayerPrefs.SetInt(WIFI_LIMIT, value ? 1 : 0);
+        }
+    }
+
+    private const string AUTHORIZE_TIME = "authorize_time";
+    public DateTime authorizeTime {
+        get {
+            return StringUtil.StringToDateTime(PlayerPrefs.GetString(AUTHORIZE_TIME, "2014-01-01 00:00:00"));
+        }
+
+        set {
+            PlayerPrefs.SetString(AUTHORIZE_TIME, StringUtil.DateTimeToString(value));
+        }
+    }
 }
 

@@ -1,12 +1,19 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-public class SyncSceneTypeCommand : BaseCommand {
+public class GetPictureCommand : BaseCommand {
 
     private UIDelegate.Update callback;
     public UIDelegate.Update Callback {
         set {
             callback = value;
+        }
+    }
+
+    private List<string> pictureIds;
+    public List<string> PictureIds {
+        set {
+            pictureIds = value;
         }
     }
 
@@ -17,7 +24,7 @@ public class SyncSceneTypeCommand : BaseCommand {
             }
             return;
         }
-        ApiController.GetAllSceneType(AppSetting.getInstance().token, handle);
+        ApiController.GetPictures(AppSetting.getInstance().token, pictureIds, handle);
     }
 
     private void handle (string str) {
@@ -27,14 +34,9 @@ public class SyncSceneTypeCommand : BaseCommand {
             }
             return;
         }
-        List<SceneType> updateList;
-        List<SceneType> deleteList;
-        SceneTypeSerializer.ToObjects(str, out updateList, out deleteList);
-        if (updateList != null && updateList.Count != 0) {
-            LogicController.ReplaceSceneTypes(updateList);
-        }
-        if (deleteList != null && deleteList.Count != 0) {
-            LogicController.DeleteSceneTypes(deleteList);
+        List<Picture> list = PictureSerializer.ToObjects(str);
+        if (list != null && list.Count != 0) {
+            LogicController.ReplacePictures(list);
         }
         if (callback != null) {
             callback(true);

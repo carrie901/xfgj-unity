@@ -2,8 +2,7 @@ using System;
 using System.Collections.Generic;
 using LitJson;
 
-public class CategorySerializer
-{
+public class CategorySerializer {
     public static Category ToObject (string str) {
         if (str == null || str.Equals(String.Empty)) {
             return null;

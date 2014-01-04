@@ -1,53 +1,53 @@
 using UnityEngine;
 using System;
 
-public class SceneItemView {
+public class SceneTypeItemView {
 
-    public static readonly string GO_PREFIX = "s_";
+    public static readonly string GO_PREFIX = "st_";
 
     private static GameObject prefab;
 
-    static SceneItemView() {
-        prefab = Resources.Load("Prefabs/scene_item") as GameObject;
+    static SceneTypeItemView() {
+        prefab = Resources.Load("Prefabs/scene_type_item") as GameObject;
     }
 
-    public static SceneItemView Create (GameObject parent) {
+    public static SceneTypeItemView Create (GameObject parent) {
         if (parent == null) {
             return null;
         }
         GameObject go = NGUITools.AddChild(parent, prefab);
-        SceneItemView view = new  SceneItemView();
+        SceneTypeItemView view = new  SceneTypeItemView();
         view.go = go;
         view.name = go.transform.Find("name").gameObject.GetComponent<UILabel>();
-        view.thumbnail = go.transform.Find("thumbnail").gameObject.GetComponent<UISprite>();
-        view.Favourite = go.transform.Find("favourite").gameObject;
+        view.pic = go.transform.Find("pic").gameObject.GetComponent<UISprite>();
         return view;
     }
 
     private GameObject go;
     private UILabel name;
-    private UISprite thumbnail;
+    private UISprite pic;
 
-    private int sceneId;
     private string pictureId;
 
-    private SceneItemView () {
+    private SceneTypeItemView () {
+    }
+
+    public int SceneTypeId {
+        get {
+            if (!go.name.StartsWith(GO_PREFIX)) {
+                return -1;
+            }
+            return Int32.Parse(go.name.Substring(GO_PREFIX.Length));
+        }
+
+        set {
+            go.name = GO_PREFIX + value;
+        }
     }
 
     public GameObject gameObject {
         get {
             return go;
-        }
-    }
-
-    public int SceneId {
-        get {
-            return sceneId;
-        }
-
-        set {
-            sceneId = value;
-            go.name = GO_PREFIX + value;
         }
     }
 
@@ -72,21 +72,15 @@ public class SceneItemView {
         }
     }
 
-    private GameObject Favourite {
-        set {
-            UIEventListener.Get(value).onClick = ClickFavourite;
-        }
-    }
-
     public void release () {
         UnityEngine.Object.Destroy(go);
         go = null;
         name = null;
-        thumbnail = null;
+        pic = null;
     }
 
     public bool IsPictureShowed () {
-        return thumbnail.atlas != null && thumbnail.spriteName == pictureId;
+        return pic.atlas != null && pic.spriteName == pictureId;
     }
 
     public void ShowPicture () {
@@ -113,17 +107,9 @@ public class SceneItemView {
             if (atlas == null) {
                 Debug.Log("atlas is null");
             }
-            thumbnail.atlas = atlas.GetComponent<UIAtlas>();
-            thumbnail.spriteName = pictureId;
+            pic.atlas = atlas.GetComponent<UIAtlas>();
+            pic.spriteName = pictureId;
         }
     }
-
-    private void ClickFavourite (GameObject go) {
-        Debug.Log("ClickFavourite");
-        Scene scene = LogicController.GetScene(sceneId);
-        scene.favourite = !scene.favourite;
-        LogicController.UpdateScene(scene);
-    }
-
 }
 

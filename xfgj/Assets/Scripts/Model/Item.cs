@@ -4,17 +4,17 @@ using System.Collections;
 
 public class Item {
 
-    public readonly long numIid;
-    public readonly string title;
-    public readonly string detailUrl;
-    public readonly int cid;
-    public readonly string picUrl;
-    public readonly float price;
-    public readonly DateTime listTime;
-    public readonly DateTime delistTime;
-    public readonly int productId;
-    public readonly int seq;
-    public readonly DateTime modified;
+    public long numIid;
+    public string title;
+    public string detailUrl;
+    public int cid;
+    public string picUrl;
+    public float price;
+    public DateTime listTime;
+    public DateTime delistTime;
+    public int productId;
+    public int seq;
+    public DateTime modified;
     
     public static readonly string TABLE_NAME = "item";
     public static readonly string FIELD_NUMIID = "numiid";

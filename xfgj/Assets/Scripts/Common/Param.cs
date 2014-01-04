@@ -33,6 +33,7 @@ public class Param {
     public const string CONTENT = "content";
     public const string REPLY = "reply";
     public const string ASSET_ID = "asset_id";
+    public const string ASSET_IDS = "asset_ids";
     public const string VERSION = "version";
     public const string PRODUCTS = "products";
     public const string STATUS = "status";
@@ -53,4 +54,9 @@ public class Param {
     public const string ASSET_UNITY = "asset_unity";
     public const string ASSET_IPHONE = "asset_iphone";
     public const string ASSET_ANDROID = "asset_android";
+    public const string RECOMMEND_ID = "recommend_id";
+    public const string URL = "url";
+    public const string START_TIME = "start_time";
+    public const string END_TIME = "end_time";
+    public const string POSITION = "position";
 }

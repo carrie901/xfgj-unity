@@ -165,6 +165,15 @@ public class ApiCaller : MonoBehaviour {
     /*
      * required: token
      */
+    public void GetRecommends (RequestParams rp) {
+        string url = AppSetting.getInstance().serverUrl + "/api/recommends";
+        url += "?" + Param.TOKEN + "=" + rp.data[Param.TOKEN];
+        StartCoroutine(NetUtil.Get(Uri.EscapeUriString(url), rp.callback));
+    }
+
+    /*
+     * required: token
+     */
     public void GetAppSetting (RequestParams rp) {
         string url = AppSetting.getInstance().serverUrl + "/api/app";
         url += "?" + Param.TOKEN + "=" + rp.data[Param.TOKEN];
@@ -172,9 +181,10 @@ public class ApiCaller : MonoBehaviour {
     }
 
 
-    public void GetAsset (RequestParams rp) {
-        string url = AppSetting.getInstance().serverUrl + "/api/asset/" + rp.data[Param.ASSET_ID];
+    public void GetAssets (RequestParams rp) {
+        string url = AppSetting.getInstance().serverUrl + "/api/assets";
         url += "?" + Param.TOKEN + "=" + rp.data[Param.TOKEN];
+        url += "&" + Param.ASSET_IDS + "=" + rp.data[Param.ASSET_IDS];
         StartCoroutine(NetUtil.Get(Uri.EscapeUriString(url), rp.callback));
     }
 
@@ -199,6 +209,13 @@ public class ApiCaller : MonoBehaviour {
             }
         }
         StartCoroutine(NetUtil.Upload(url, postFields, postFiles, rp.callback));
+    }
+
+    public void GetPictures (RequestParams rp) {
+        string url = AppSetting.getInstance().serverUrl + "/api/pictures";
+        url += "?" + Param.TOKEN + "=" + rp.data[Param.TOKEN];
+        url += "&" + Param.PICTURES + "=" + rp.data[Param.PICTURES];
+        StartCoroutine(NetUtil.Get(Uri.EscapeUriString(url), rp.callback));
     }
 
 }

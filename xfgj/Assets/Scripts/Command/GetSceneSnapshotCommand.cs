@@ -38,7 +38,7 @@ public class GetSceneSnapshotCommand : BaseCommand{
             List<Scene> deleteList;
             SceneSerializer.ToObjects(jd[Param.SCENE].ToJson(), out updateList, out deleteList);
             if (updateList != null && updateList.Count != 0) {
-                LogicController.ReplaceScenes(updateList);
+                LogicController.ReplaceScenesIgnoreFavourite(updateList);
             }
             if (deleteList != null && deleteList.Count != 0) {
                 LogicController.DeleteScenes(deleteList);

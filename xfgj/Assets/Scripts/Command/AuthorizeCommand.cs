@@ -1,3 +1,4 @@
+using UnityEngine;
 using System;
 using LitJson;
 
@@ -11,6 +12,18 @@ public class AuthorizeCommand : BaseCommand{
     }
 
     public override void execute () {
+        if (Application.internetReachability == NetworkReachability.NotReachable) {
+            if (callback != null) {
+                callback(false);
+            }
+            return;
+        }
+        if (DateTime.Compare(AppSetting.getInstance().authorizeTime, DateTime.Today) > 0) {
+            if (callback != null) {
+                callback(true);
+            }
+            return;
+        }
         ApiController.Authorize(Config.APP_KEY, handle);
     }
 
@@ -23,6 +36,7 @@ public class AuthorizeCommand : BaseCommand{
         }
         JsonData jd = JsonMapper.ToObject(res);
         AppSetting.getInstance().token = (string)jd[Param.TOKEN];
+        AppSetting.getInstance().authorizeTime = DateTime.Now;
         if (callback != null) {
             callback(true);
         }

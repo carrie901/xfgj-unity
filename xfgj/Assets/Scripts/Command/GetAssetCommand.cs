@@ -1,3 +1,4 @@
+using UnityEngine;
 using System;
 using System.Collections.Generic;
 
@@ -10,18 +11,27 @@ public class GetAssetCommand : BaseCommand {
         }
     }
 
-    private int? assetId;
-    public int? AssetId {
+    private List<int> assetIds;
+    public List<int> AssetIds {
         set {
-            assetId = value;
+            assetIds = value;
         }
     }
 
     public override void execute () {
-        if (assetId == null) {
-            throw new ArgumentNullException("assetId can't be null");
+        if (assetIds == null) {
+            throw new ArgumentNullException("assetIds can't be null");
         }
-        ApiController.GetAsset(AppSetting.getInstance().token, (int)assetId, null);
+        if (assetIds.Count == 0) {
+            throw new ArgumentNullException("assetIds can't be empty");
+        }
+        if (Application.internetReachability == NetworkReachability.NotReachable) {
+            if (callback != null) {
+                callback(false);
+            }
+            return;
+        }
+        ApiController.GetAssets(AppSetting.getInstance().token, assetIds, handle);
     }
 
     private void handle (string res) {
@@ -31,12 +41,12 @@ public class GetAssetCommand : BaseCommand {
             }
             return;
         }
-        Asset asset = AssetSerializer.ToObject(res);
-        List<Asset> list = new List<Asset>();
-        list.Add(asset);
-        LogicController.ReplaceAssets(list);
+        List<Asset> list = AssetSerializer.ToObjects(res);
+        if (list != null && list.Count != 0) {
+            LogicController.ReplaceAssets(list);
+        }
         if (callback != null) {
-            callback(asset);
+            callback(null);
         }
     }
 

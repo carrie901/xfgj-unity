@@ -174,17 +174,32 @@ public class ApiController {
         obj.SendMessage("GetCategorys", rp, SendMessageOptions.RequireReceiver);
     }
 
+    public static void GetRecommends (string token, ApiCaller.ResponseHandle handle) {
+        ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
+        rp.data = new Dictionary<string, string>();
+        rp.data.Add(Param.TOKEN, token);
+        rp.callback = handle;
+        obj.SendMessage("GetRecommends", rp, SendMessageOptions.RequireReceiver);
+    }
+
     public static void GetAppSetting (string token) {
 
     }
 
-    public static void GetAsset (string token, int assetId, ApiCaller.ResponseHandle handle) {
+    public static void GetAssets (string token, List<int> assetIds, ApiCaller.ResponseHandle handle) {
         ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.TOKEN, token);
-        rp.data.Add(Param.ASSET_ID, "" + assetId);
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < assetIds.Count; ++i) {
+            sb.Append(assetIds[i]);
+            if (i != assetIds.Count - 1) {
+                sb.Append(",");
+            }
+        }
+        rp.data.Add(Param.ASSET_IDS, sb.ToString());
         rp.callback = handle;
-        obj.SendMessage("GetAsset", rp, SendMessageOptions.RequireReceiver);
+        obj.SendMessage("GetAssets", rp, SendMessageOptions.RequireReceiver);
     }
 
     public static void UploadAtlas (string token, string metaData, string unityPath,
@@ -227,6 +242,26 @@ public class ApiController {
         }
         rp.callback = handle;
         obj.SendMessage("UploadAssetBundle", rp, SendMessageOptions.RequireReceiver);
+    }
+
+    public static void GetPictures (string token, List<string> pictureIds,
+                                    ApiCaller.ResponseHandle handle) {
+        ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
+        rp.data = new Dictionary<string, string>();
+        rp.data.Add(Param.TOKEN, token);
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < pictureIds.Count; ++i) {
+            if (pictureIds[i] == null) {
+                continue;
+            }
+            sb.Append(pictureIds[i]);
+            if (i != pictureIds.Count - 1) {
+                sb.Append(",");
+            }
+        }
+        rp.data.Add(Param.PICTURES, sb.ToString());
+        rp.callback = handle;
+        obj.SendMessage("GetPictures", rp, SendMessageOptions.RequireReceiver);
     }
 }
 

@@ -4,12 +4,12 @@ using System.Collections;
 
 public class Category {
 
-    public readonly int cid;
-    public readonly string name;
-    public readonly int parentCid;
-    public readonly bool isParent;
-    public readonly bool usable;
-    public readonly DateTime modified;
+    public int cid;
+    public string name;
+    public int parentCid;
+    public bool isParent;
+    public bool usable;
+    public DateTime modified;
     
     public static readonly string TABLE_NAME = "category";
     public static readonly string FIELD_CID = "cid";

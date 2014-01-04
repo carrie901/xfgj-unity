@@ -12,6 +12,12 @@ public class SyncScenesCommand : BaseCommand {
     }
 
     public override void execute () {
+        if (Application.internetReachability == NetworkReachability.NotReachable) {
+            if (callback != null) {
+                callback(false);
+            }
+            return;
+        }
         DateTime? dt = null;
         Scene scene = LogicController.GetLatestMofifiedScene();
         if (scene != null) {
@@ -33,7 +39,7 @@ public class SyncScenesCommand : BaseCommand {
         SceneSerializer.ToObjects(str, out updateList, out deleteList);
         bool result = false;
         if (updateList != null && updateList.Count != 0) {
-            LogicController.ReplaceScenes(updateList);
+            LogicController.ReplaceScenesIgnoreFavourite(updateList);
             result = true;
         }
         if (deleteList != null && deleteList.Count != 0) {
