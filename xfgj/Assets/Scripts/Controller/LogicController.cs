@@ -991,25 +991,6 @@ public class LogicController {
         dbAccess.CloseSqlConnection();
     }
 
-    public static Recommend GetRecommend (int recommendId) {
-        DBAccess dbAccess = new DBAccess();
-        dbAccess.OpenDB(Config.DB_PATH);
-        string whereArgs = "WHERE " + Recommend.FIELD_RECOMMEND_ID + "=" + recommendId;
-        SqliteDataReader reader = dbAccess.Query(Recommend.TABLE_NAME, "*", whereArgs);
-        Recommend recommend = null;
-        while (reader.Read()) {
-            recommend = new Recommend(reader.GetInt32(reader.GetOrdinal(Recommend.FIELD_RECOMMEND_ID)),
-                            reader.GetString(reader.GetOrdinal(Recommend.FIELD_PICTURE_ID)),
-                            reader.GetString(reader.GetOrdinal(Recommend.FIELD_URL)),
-                            StringUtil.StringToDateTime(reader.GetString(reader.GetOrdinal(Recommend.FIELD_START_TIME))),
-                            StringUtil.StringToDateTime(reader.GetString(reader.GetOrdinal(Recommend.FIELD_END_TIME))),
-                            reader.GetString(reader.GetOrdinal(Recommend.FIELD_POSITION)));
-        }
-        reader.Close();
-        dbAccess.CloseSqlConnection();
-        return recommend;
-    }
-
     public static void DeleteRecommends (List<Recommend> list) {
         if (list == null || list.Count == 0) {
             throw new SqliteException("list can't be empty");
@@ -1029,6 +1010,43 @@ public class LogicController {
         }
         dbAccess.Delete(Recommend.TABLE_NAME, whereArgs.ToString());
         dbAccess.CloseSqlConnection();
+    }
+
+    public static Recommend GetRecommend (int recommendId) {
+        DBAccess dbAccess = new DBAccess();
+        dbAccess.OpenDB(Config.DB_PATH);
+        string whereArgs = "WHERE " + Recommend.FIELD_RECOMMEND_ID + "=" + recommendId;
+        SqliteDataReader reader = dbAccess.Query(Recommend.TABLE_NAME, "*", whereArgs);
+        Recommend recommend = null;
+        while (reader.Read()) {
+            recommend = new Recommend(reader.GetInt32(reader.GetOrdinal(Recommend.FIELD_RECOMMEND_ID)),
+                            reader.GetString(reader.GetOrdinal(Recommend.FIELD_PICTURE_ID)),
+                            reader.GetString(reader.GetOrdinal(Recommend.FIELD_URL)),
+                            StringUtil.StringToDateTime(reader.GetString(reader.GetOrdinal(Recommend.FIELD_START_TIME))),
+                            StringUtil.StringToDateTime(reader.GetString(reader.GetOrdinal(Recommend.FIELD_END_TIME))),
+                            reader.GetString(reader.GetOrdinal(Recommend.FIELD_POSITION)));
+        }
+        reader.Close();
+        dbAccess.CloseSqlConnection();
+        return recommend;
+    }
+
+    public static List<Recommend> GetRecommends () {
+        DBAccess dbAccess = new DBAccess();
+        dbAccess.OpenDB(Config.DB_PATH);
+        SqliteDataReader reader = dbAccess.Query(Recommend.TABLE_NAME, "*", null);
+        List<Recommend> list = new List<Recommend>();
+        while (reader.Read()) {
+            list.Add(new Recommend(reader.GetInt32(reader.GetOrdinal(Recommend.FIELD_RECOMMEND_ID)),
+                            reader.GetString(reader.GetOrdinal(Recommend.FIELD_PICTURE_ID)),
+                            reader.GetString(reader.GetOrdinal(Recommend.FIELD_URL)),
+                            StringUtil.StringToDateTime(reader.GetString(reader.GetOrdinal(Recommend.FIELD_START_TIME))),
+                            StringUtil.StringToDateTime(reader.GetString(reader.GetOrdinal(Recommend.FIELD_END_TIME))),
+                            reader.GetString(reader.GetOrdinal(Recommend.FIELD_POSITION))));
+        }
+        reader.Close();
+        dbAccess.CloseSqlConnection();
+        return list;
     }
     #endregion
 }

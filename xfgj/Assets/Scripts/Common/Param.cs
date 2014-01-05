@@ -59,4 +59,8 @@ public class Param {
     public const string START_TIME = "start_time";
     public const string END_TIME = "end_time";
     public const string POSITION = "position";
+    public const string X = "x";
+    public const string Y = "y";
+    public const string WIDTH = "width";
+    public const string HEIGHT = "height";
 }

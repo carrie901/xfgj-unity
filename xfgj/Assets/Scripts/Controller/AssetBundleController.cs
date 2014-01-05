@@ -57,13 +57,18 @@ public class AssetBundleController : MonoBehaviour
         yield return www;
         if (www.error != null) {
             Debug.Log(www.error);
+            if (notify != null) {
+                notify(-1.0f);
+            }
         }
-        AssetBundle bundle = www.assetBundle;
-        AsyncOperation oper = Application.LoadLevelAdditiveAsync(names[0]);
-        this.oper = oper;
-        this.notifyCallback = notify;
-        yield return oper;
-        bundle.Unload(false);
+        else {
+            AssetBundle bundle = www.assetBundle;
+            AsyncOperation oper = Application.LoadLevelAdditiveAsync(names[0]);
+            this.oper = oper;
+            this.notifyCallback = notify;
+            yield return oper;
+            bundle.Unload(false);
+        }
     }
 
     private void StartLoadObject (LoadParam param) {
@@ -71,36 +76,40 @@ public class AssetBundleController : MonoBehaviour
             || param.name == null || param.callback == null) {
             throw new System.ArgumentNullException("param can't be null");
         }
-        for (int i = 0; i < param.name.Length; ++i) {
-            Object obj = FindInLoadedAssets(param.path, param.version, param.name[i]);
-            if (obj == null) {
-                break;
-            }
-        }
         StartCoroutine(LoadObjectProgram(param.path, param.version, param.name, param.callback));
     }
 
     private IEnumerator LoadObjectProgram (string path, int version, string[] names, LoadCallback callback) {
         WWW www = WWW.LoadFromCacheOrDownload(path, version);
         yield return www;
-        UnityEngine.Object[] objs = new UnityEngine.Object[names.Length];
-        for (int i = 0; i < names.Length; ++i) {
-            if (names[i] != null) {
-                Object obj = FindInLoadedAssets(path, version, names[i]);
-                if (obj != null) {
-                    objs[i] = obj;
-                }
-                else {
-                    objs[i] = Instantiate(www.assetBundle.Load(names[i]));
-                    AddInLoadedAssets(path, version, names[i], objs[i]);
-                }
-            }
-            else {
-                objs[i] = null;
+        if (www.error != null) {
+            Debug.Log(www.error);
+            if (callback != null) {
+                callback(null);
             }
         }
-        callback(objs);
-        www.assetBundle.Unload(false);
+        else {
+            UnityEngine.Object[] objs = new UnityEngine.Object[names.Length];
+            for (int i = 0; i < names.Length; ++i) {
+                if (names[i] != null) {
+                    Object obj = FindInLoadedAssets(path, version, names[i]);
+                    if (obj != null) {
+                        objs[i] = obj;
+                    }
+                    else {
+                        objs[i] = Instantiate(www.assetBundle.Load(names[i]));
+                        AddInLoadedAssets(path, version, names[i], objs[i]);
+                    }
+                }
+                else {
+                    objs[i] = null;
+                }
+            }
+            if (callback != null) {
+                callback(objs);
+            }
+            www.assetBundle.Unload(false);
+        }
     }
     #endregion
 

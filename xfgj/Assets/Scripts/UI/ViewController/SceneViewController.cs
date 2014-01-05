@@ -89,6 +89,9 @@ public class SceneViewController : MonoBehaviour {
                 }
             }
         }
+        else if (progress == -1.0f) {
+            //TODO
+        }
     }
 
     private void TurnLeft (GameObject go) {

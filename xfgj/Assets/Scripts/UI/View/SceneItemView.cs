@@ -112,6 +112,7 @@ public class SceneItemView {
             GameObject atlas = objs[0] as GameObject;
             if (atlas == null) {
                 Debug.Log("atlas is null");
+                return;
             }
             thumbnail.atlas = atlas.GetComponent<UIAtlas>();
             thumbnail.spriteName = pictureId;

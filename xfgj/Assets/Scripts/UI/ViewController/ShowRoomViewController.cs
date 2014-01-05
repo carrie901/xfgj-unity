@@ -85,6 +85,7 @@ public class ShowRoomViewController : MonoBehaviour {
                 }
             }
         }
+        tableComp.Reposition();
         if (picIdList.Count != 0) {
             GetPictureCommand cmd = new GetPictureCommand();
             cmd.Callback = AfterGetPicture;
@@ -99,7 +100,6 @@ public class ShowRoomViewController : MonoBehaviour {
         }
         picIdList.Clear();
         assetIdList.Clear();
-        tableComp.Reposition();
     }
 
     private void ClearView () {

@@ -1,67 +1,52 @@
 using UnityEngine;
 using System;
 
-public class SceneTypeItemView {
-
-    public static readonly string GO_PREFIX = "st_";
+public class RecommendItemView {
+    public static readonly string GO_PREFIX = "r_";
 
     private static GameObject prefab;
 
-    static SceneTypeItemView() {
-        prefab = Resources.Load("Prefabs/scene_type_item") as GameObject;
+    static RecommendItemView() {
+        prefab = Resources.Load("Prefabs/recommend_item") as GameObject;
     }
 
-    public static SceneTypeItemView Create (GameObject parent) {
+    public static RecommendItemView Create (GameObject parent) {
         if (parent == null) {
             return null;
         }
         GameObject go = NGUITools.AddChild(parent, prefab);
-        SceneTypeItemView view = new  SceneTypeItemView();
+        RecommendItemView view = new  RecommendItemView();
         view.go = go;
-        view.name = go.transform.Find("name").gameObject.GetComponent<UILabel>();
-        view.pic = go.transform.Find("pic").gameObject.GetComponent<UISprite>();
+        view.sprite = go.GetComponent<UISprite>();
         return view;
     }
 
+    private RecommendItemView () {
+    }
+
     private GameObject go;
-    private UILabel name;
-    private UISprite pic;
-
-    private string pictureId;
-
-    private SceneTypeItemView () {
-    }
-
-    public int SceneTypeId {
-        get {
-            if (!go.name.StartsWith(GO_PREFIX)) {
-                return -1;
-            }
-            return Int32.Parse(go.name.Substring(GO_PREFIX.Length));
-        }
-
-        set {
-            go.name = GO_PREFIX + value;
-        }
-    }
-
     public GameObject gameObject {
         get {
             return go;
         }
     }
 
-    public string Name {
+    private int recommendId;
+    public int RecommendId {
         get {
-            return name.text;
+            return recommendId;
         }
 
         set {
-            name.text = value;
+            recommendId = value;
+            go.name = GO_PREFIX + value;
         }
     }
 
-    public string PictureId {
+    private UISprite sprite;
+
+    private string pictureId;
+    public String PictureId {
         get {
             return pictureId;
         }
@@ -72,15 +57,24 @@ public class SceneTypeItemView {
         }
     }
 
+    public int x;
+    public int y;
+    public int width;
+    public int height;
+
     public void release () {
         UnityEngine.Object.Destroy(go);
         go = null;
-        name = null;
-        pic = null;
+        sprite = null;
+    }
+
+    public void MatchPictureSize () {
+        sprite.width = width;
+        sprite.height = height;
     }
 
     public bool IsPictureShowed () {
-        return pic.atlas != null && pic.spriteName == pictureId;
+        return sprite.atlas != null && sprite.spriteName == pictureId;
     }
 
     public void ShowPicture () {
@@ -101,16 +95,17 @@ public class SceneTypeItemView {
     }
 
     private void LoadCallback (UnityEngine.Object[] objs) {
-        Debug.Log("SceneItemView LoadCallback");
+        Debug.Log("RecommendItemView LoadCallback");
         if (objs != null && objs.Length != 0) {
             GameObject atlas = objs[0] as GameObject;
             if (atlas == null) {
                 Debug.Log("atlas is null");
                 return;
             }
-            pic.atlas = atlas.GetComponent<UIAtlas>();
-            pic.spriteName = pictureId;
+            sprite.atlas = atlas.GetComponent<UIAtlas>();
+            sprite.spriteName = pictureId;
         }
     }
+
 }
 
