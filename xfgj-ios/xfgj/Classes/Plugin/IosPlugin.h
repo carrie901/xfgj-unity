@@ -7,11 +7,11 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
-@interface InfoAccess : NSObject {
+@interface IosPlugin : NSObject
 
 
-
-}
++(UIViewController*) getCurrentRootViewController;
 
 @end
