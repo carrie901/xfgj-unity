@@ -72,10 +72,7 @@ public class ScenesViewController : MonoBehaviour {
         sceneIdList.Clear();
         List<Scene> scenes = dataSource(itemViewList.Count, ITEM_COUNT);
         for (int i = 0; i < scenes.Count; ++i) {
-            SceneItemView itemView = SceneItemView.Create(table);
-            itemView.SceneId = scenes[i].sceneId;
-            itemView.Name = scenes[i].name;
-            itemView.PictureId = scenes[i].pictureId;
+            SceneItemView itemView = SceneItemView.Create(table, scenes[i]);
             UIEventListener.Get(itemView.gameObject).onClick = ItemClick;
             itemViewList.Add(itemView);
 

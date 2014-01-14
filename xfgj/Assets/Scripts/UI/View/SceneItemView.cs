@@ -11,28 +11,37 @@ public class SceneItemView {
         prefab = Resources.Load("Prefabs/scene_item") as GameObject;
     }
 
-    public static SceneItemView Create (GameObject parent) {
-        if (parent == null) {
+    public static SceneItemView Create (GameObject parent, Scene scene) {
+        if (parent == null || scene == null) {
             return null;
         }
         GameObject go = NGUITools.AddChild(parent, prefab);
         SceneItemView view = new  SceneItemView();
+        view.scene = scene;
         view.go = go;
         view.name = go.transform.Find("name").gameObject.GetComponent<UILabel>();
         view.thumbnail = go.transform.Find("thumbnail").gameObject.GetComponent<UISprite>();
-        view.Favourite = go.transform.Find("favourite").gameObject;
+        GameObject grayHeart = go.transform.Find("favourite/Gray").gameObject;
+        GameObject redHeart = go.transform.Find("favourite/Red").gameObject;
+        view.grayHeart = grayHeart.GetComponent<UISprite>();
+        view.redHeart = redHeart.GetComponent<UISprite>();
+        UIEventListener.Get(go.transform.Find("favourite").gameObject).onClick = view.ClickFavourite;
+        view.go.name = GO_PREFIX + scene.sceneId;
+        view.name.text = scene.name;
+        view.ShowPicture();
+        view.ShowFavouriteState();
         return view;
     }
 
     private GameObject go;
     private UILabel name;
     private UISprite thumbnail;
+    private UISprite grayHeart;
+    private UISprite redHeart;
 
-    private int sceneId;
-    private string pictureId;
+    private Scene scene;
 
-    private SceneItemView () {
-    }
+    private SceneItemView () {}
 
     public GameObject gameObject {
         get {
@@ -40,53 +49,23 @@ public class SceneItemView {
         }
     }
 
-    public int SceneId {
+    public Scene SceneObject {
         get {
-            return sceneId;
-        }
-
-        set {
-            sceneId = value;
-            go.name = GO_PREFIX + value;
+            return scene;
         }
     }
 
-    public string Name {
-        get {
-            return name.text;
-        }
-
-        set {
-            name.text = value;
-        }
-    }
-
-    public string PictureId {
-        get {
-            return pictureId;
-        }
-
-        set {
-            pictureId = value;
-            ShowPicture();
-        }
-    }
-
-    private GameObject Favourite {
-        set {
-            UIEventListener.Get(value).onClick = ClickFavourite;
-        }
-    }
-
+    #region public
     public void release () {
         UnityEngine.Object.Destroy(go);
         go = null;
         name = null;
         thumbnail = null;
+        scene = null;
     }
 
     public bool IsPictureShowed () {
-        return thumbnail.atlas != null && thumbnail.spriteName == pictureId;
+        return thumbnail.atlas != null && thumbnail.spriteName == scene.pictureId;
     }
 
     public void ShowPicture () {
@@ -94,7 +73,7 @@ public class SceneItemView {
             return;
         }
         Debug.Log("ShowPicture call");
-        Picture picture = LogicController.GetPicture(pictureId);
+        Picture picture = LogicController.GetPicture(scene.pictureId);
         if (picture == null) { return; }
         Asset asset = LogicController.GetAsset(picture.assetId);
         if (asset == null) { return; }
@@ -105,7 +84,9 @@ public class SceneItemView {
         param.callback = LoadCallback;
         AssetBundleController.LoadObject(param);
     }
+    #endregion
 
+    #region private
     private void LoadCallback (UnityEngine.Object[] objs) {
         Debug.Log("SceneItemView LoadCallback");
         if (objs != null && objs.Length != 0) {
@@ -115,16 +96,29 @@ public class SceneItemView {
                 return;
             }
             thumbnail.atlas = atlas.GetComponent<UIAtlas>();
-            thumbnail.spriteName = pictureId;
+            thumbnail.spriteName = scene.pictureId;
         }
     }
 
     private void ClickFavourite (GameObject go) {
         Debug.Log("ClickFavourite");
-        Scene scene = LogicController.GetScene(sceneId);
         scene.favourite = !scene.favourite;
         LogicController.UpdateScene(scene);
+        ShowFavouriteState();
     }
 
+    private void ShowFavouriteState() {
+        int maxDepth = Math.Max(grayHeart.depth, redHeart.depth);
+        int minDepth = Math.Min(grayHeart.depth, redHeart.depth);
+        if (scene.favourite) {
+            redHeart.depth = maxDepth;
+            grayHeart.depth = minDepth;
+        }
+        else {
+            redHeart.depth = minDepth;
+            grayHeart.depth = maxDepth;
+        }
+    }
+    #endregion
 }
 
