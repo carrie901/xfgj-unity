@@ -28,10 +28,10 @@ public class AssetBundleManager : MonoBehaviour {
     #region MonoBehaviour
     void Awake () {
         obj = GameObject.Find("InitObj");
+        operQueue = new Queue<Operation>();
     }
 
     void Start () {
-        operQueue = new Queue<Operation>();
     }
     #endregion
 
