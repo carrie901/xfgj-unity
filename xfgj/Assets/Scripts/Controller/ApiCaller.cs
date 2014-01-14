@@ -218,5 +218,12 @@ public class ApiCaller : MonoBehaviour {
         StartCoroutine(NetUtil.Get(Uri.EscapeUriString(url), rp.callback));
     }
 
+    public void CheckUpdate (RequestParams rp) {
+        string url = AppSetting.getInstance().serverUrl + "/api/checkupdate";
+        url += "?" + Param.APP_NAME + "=" + rp.data[Param.APP_NAME];
+        url += "&" + Param.APP_VERSION + "=" + rp.data[Param.APP_VERSION];
+        StartCoroutine(NetUtil.Get(Uri.EscapeUriString(url), rp.callback));
+    }
+
 }
 

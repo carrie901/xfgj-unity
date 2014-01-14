@@ -263,5 +263,15 @@ public class ApiController {
         rp.callback = handle;
         obj.SendMessage("GetPictures", rp, SendMessageOptions.RequireReceiver);
     }
+
+    public static void CheckUpdate (string appName, string appVersion,
+                                    ApiCaller.ResponseHandle handle) {
+        ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
+        rp.data = new Dictionary<string, string>();
+        rp.data.Add(Param.APP_NAME, appName);
+        rp.data.Add(Param.APP_VERSION, appVersion);
+        rp.callback = handle;
+        obj.SendMessage("CheckUpdate", rp, SendMessageOptions.RequireReceiver);
+    }
 }
 

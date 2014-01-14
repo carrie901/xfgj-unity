@@ -63,4 +63,7 @@ public class Param {
     public const string Y = "y";
     public const string WIDTH = "width";
     public const string HEIGHT = "height";
+    public const string APP_VERSION = "app_version";
+    public const string APP_NAME = "app_name";
+    public const string UPDATE_DETAILS = "update_details";
 }

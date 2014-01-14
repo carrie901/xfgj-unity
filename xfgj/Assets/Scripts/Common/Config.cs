@@ -6,6 +6,7 @@ public class Config {
 
     #region app info
     public const string APP_KEY = "T6rfDzeRmQdT9J7x";
+    public static readonly string APP_NAME;
     public static readonly string APP_VERSION;
     #endregion
 
@@ -35,19 +36,22 @@ public class Config {
         DB_PATH = "URI=file:" + Application.persistentDataPath + "/xfgj.sqlite";
         STREAMING_ASSETS = "jar:file://" + Application.dataPath + "!/assets/";
         ASSETBUNDLE_PATH = STREAMING_ASSETS + "Android/";
-        APP_VERSION = "android";
+        APP_NAME = "wanzhuangxiu_android";
+        APP_VERSION = "1.0";
         ASSET_URL = "http://xfgj-asset-android.u.qiniudn.com/";
 #elif UNITY_IPHONE
         DB_PATH = "Data Source=" + Application.persistentDataPath + "/xfgj.sqlite";
         STREAMING_ASSETS = Application.dataPath + "/Raw/";
         ASSETBUNDLE_PATH = STREAMING_ASSETS + "Ios/";
-        APP_VERSION = "iphone" + IosPlugin.GetBundleVersion();
+        APP_NAME = "wanzhuangxiu_iphone";
+        APP_VERSION = IosPlugin.GetBundleVersion();
         ASSET_URL = "http://xfgj-asset-iphone.u.qiniudn.com/";
 #else
         DB_PATH = "Data Source=xfgj.sqlite";
         STREAMING_ASSETS = "file://" + Application.dataPath + "/StreamingAssets/";
         ASSETBUNDLE_PATH = STREAMING_ASSETS + "Unity/";
-        APP_VERSION = "Unity";
+        APP_NAME = "wanzhuangxiu_unity";
+        APP_VERSION = "1.0";
         ASSET_URL = "http://xfgj-asset-unity.u.qiniudn.com/";
 #endif
 #if XFGJ_RELEASE
