@@ -12,6 +12,4 @@
 @interface IosPlugin : NSObject
 
 
-+(UIViewController*) getCurrentRootViewController;
-
 @end

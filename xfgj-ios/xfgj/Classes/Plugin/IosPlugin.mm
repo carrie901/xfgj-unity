@@ -6,37 +6,10 @@
 //
 //
 #import "IosPlugin.h"
-#import "WebViewController.h"
+#import "RecommendViewController.h"
 #import "UnityAppController.h"
 
 @implementation IosPlugin
-
-
-+ (UIViewController*) getCurrentRootViewController {
-    UIViewController *result;
-
-    UIWindow *topWindow = [[UIApplication sharedApplication] keyWindow];
-    if (topWindow.windowLevel != UIWindowLevelNormal)
-    {
-        NSArray *windows = [[UIApplication sharedApplication] windows];
-        for(topWindow in windows)
-        {
-            if (topWindow.windowLevel == UIWindowLevelNormal)
-                break;
-        }
-    }
-        
-    UIView *rootView = [[topWindow subviews] objectAtIndex:0];
-    id nextResponder = [rootView nextResponder];
-        
-    if ([nextResponder isKindOfClass:[UIViewController class]])
-        result = nextResponder;
-    else if ([topWindow respondsToSelector:@selector(rootViewController)] && topWindow.rootViewController != nil)
-        result = topWindow.rootViewController;
-    else
-        NSAssert(NO, @"ShareKit: Could not find a root view controller.  You can assign one manually by calling [[SHK currentHelper] setRootViewController:YOURROOTVIEWCONTROLLER].");
-    return result;
-}
 
 
 @end
@@ -67,11 +40,13 @@ extern "C" {
     
     void OpenWebsite(const char* url) {
         NSLog(@"%@", CreateNSString(url));
-        WebViewController *webViewController = [[WebViewController alloc] initWithNibName:@"WebView" bundle:nil];
-        /*UnityAppController *appController = (UnityAppController*)[UIApplication sharedApplication].delegate;
-        [appController.window addSubview:webViewController.view];
-        [webViewController.webView loadHTMLString:nil baseURL:[NSURL URLWithString:@"http://www.baidu.com"]];*/
-        [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:webViewController animated:YES completion:nil];
+        RecommendViewController *viewController = [[RecommendViewController alloc] initWithNibName:@"RecommendViewController" bundle:nil];
+        viewController.url = CreateNSString(url);
+        [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:viewController animated:YES completion:nil];
+    }
+    
+    long GetAvailableSpace() {
+        return 1l;
     }
 	
 }
