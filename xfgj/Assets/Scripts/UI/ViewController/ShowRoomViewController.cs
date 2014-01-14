@@ -67,10 +67,7 @@ public class ShowRoomViewController : MonoBehaviour {
         assetIdList.Clear();
         List<SceneType> sceneTypes = LogicController.GetSceneTypes();
         for (int i = 0; i < sceneTypes.Count; ++i) {
-            SceneTypeItemView itemView = SceneTypeItemView.Create(table);
-            itemView.SceneTypeId = sceneTypes[i].typeId;
-            itemView.Name = sceneTypes[i].name;
-            itemView.PictureId = sceneTypes[i].pictureId;
+            SceneTypeItemView itemView = SceneTypeItemView.Create(table, sceneTypes[i]);
             UIEventListener.Get(itemView.gameObject).onClick = ItemClick;
             itemViewList.Add(itemView);
 

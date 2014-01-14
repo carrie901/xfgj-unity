@@ -86,12 +86,8 @@ public class RecommendItemView {
         if (picture == null) { return; }
         Asset asset = LogicController.GetAsset(picture.assetId);
         if (asset == null) { return; }
-        AssetBundleController.LoadParam param = new AssetBundleController.LoadParam();
-        param.path = Config.ASSET_URL + asset.name;
-        param.version = asset.version;
-        param.name = new string[]{picture.atlasName};
-        param.callback = LoadCallback;
-        AssetBundleController.LoadObject(param);
+        AssetBundleManager.GetObject(AppSetting.getInstance().assetUrl + asset.name, asset.version,
+                                     new string[]{picture.atlasName}, LoadCallback);
     }
 
     private void LoadCallback (UnityEngine.Object[] objs) {

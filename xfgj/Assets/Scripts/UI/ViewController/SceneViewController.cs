@@ -62,12 +62,8 @@ public class SceneViewController : MonoBehaviour {
     }
 
     private void LoadScene (Asset asset) {
-        AssetBundleController.LoadParam param = new AssetBundleController.LoadParam();
-        param.path = AppSetting.getInstance().assetUrl + asset.name;
-        param.name = new string[] {"" + scene.sceneId};
-        param.version = asset.version;
-        param.notify = NotifyProgress;
-        AssetBundleController.LoadScene(param);
+        SceneManager.LoadLevelAdditive(AppSetting.getInstance().assetUrl + asset.name,
+                                       asset.version, "" + scene.sceneId, NotifyProgress);
         loadPanel.SetActive(true);
     }
 

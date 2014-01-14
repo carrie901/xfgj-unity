@@ -11,15 +11,19 @@ public class SceneTypeItemView {
         prefab = Resources.Load("Prefabs/scene_type_item") as GameObject;
     }
 
-    public static SceneTypeItemView Create (GameObject parent) {
-        if (parent == null) {
+    public static SceneTypeItemView Create (GameObject parent, SceneType sceneType) {
+        if (parent == null || sceneType == null) {
             return null;
         }
         GameObject go = NGUITools.AddChild(parent, prefab);
         SceneTypeItemView view = new  SceneTypeItemView();
+        view.sceneType = sceneType;
         view.go = go;
         view.name = go.transform.Find("name").gameObject.GetComponent<UILabel>();
         view.pic = go.transform.Find("pic").gameObject.GetComponent<UISprite>();
+        view.go.name = GO_PREFIX + sceneType.typeId;
+        view.name.text = sceneType.name;
+        view.ShowPicture();
         return view;
     }
 
@@ -27,10 +31,9 @@ public class SceneTypeItemView {
     private UILabel name;
     private UISprite pic;
 
-    private string pictureId;
+    private SceneType sceneType;
 
-    private SceneTypeItemView () {
-    }
+    private SceneTypeItemView () {}
 
     public int SceneTypeId {
         get {
@@ -51,24 +54,9 @@ public class SceneTypeItemView {
         }
     }
 
-    public string Name {
+    public SceneType SceneTypeObject {
         get {
-            return name.text;
-        }
-
-        set {
-            name.text = value;
-        }
-    }
-
-    public string PictureId {
-        get {
-            return pictureId;
-        }
-
-        set {
-            pictureId = value;
-            ShowPicture();
+            return sceneType;
         }
     }
 
@@ -77,10 +65,11 @@ public class SceneTypeItemView {
         go = null;
         name = null;
         pic = null;
+        sceneType = null;
     }
 
     public bool IsPictureShowed () {
-        return pic.atlas != null && pic.spriteName == pictureId;
+        return pic.atlas != null && pic.spriteName == sceneType.pictureId;
     }
 
     public void ShowPicture () {
@@ -88,16 +77,12 @@ public class SceneTypeItemView {
             return;
         }
         Debug.Log("ShowPicture call");
-        Picture picture = LogicController.GetPicture(pictureId);
+        Picture picture = LogicController.GetPicture(sceneType.pictureId);
         if (picture == null) { return; }
         Asset asset = LogicController.GetAsset(picture.assetId);
         if (asset == null) { return; }
-        AssetBundleController.LoadParam param = new AssetBundleController.LoadParam();
-        param.path = Config.ASSET_URL + asset.name;
-        param.version = asset.version;
-        param.name = new string[]{picture.atlasName};
-        param.callback = LoadCallback;
-        AssetBundleController.LoadObject(param);
+        AssetBundleManager.GetObject(AppSetting.getInstance().assetUrl + asset.name, asset.version,
+                                     new string[]{picture.atlasName}, LoadCallback);
     }
 
     private void LoadCallback (UnityEngine.Object[] objs) {
@@ -108,8 +93,13 @@ public class SceneTypeItemView {
                 Debug.Log("atlas is null");
                 return;
             }
-            pic.atlas = atlas.GetComponent<UIAtlas>();
-            pic.spriteName = pictureId;
+            Debug.Log("Pic " + pic);
+            Debug.Log("Atlas " + atlas);
+            //maybe will call release before enter in this func
+            if (pic != null) {
+                pic.atlas = atlas.GetComponent<UIAtlas>();
+                pic.spriteName = sceneType.pictureId;
+            }
         }
     }
 }

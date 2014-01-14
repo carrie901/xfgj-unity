@@ -20,10 +20,6 @@ public class Initialize : MonoBehaviour {
         if (ac == null) {
             gameObject.AddComponent("ApiCaller");
         }
-        AssetBundleController abc = gameObject.GetComponent<AssetBundleController>();
-        if (abc == null) {
-            gameObject.AddComponent("AssetBundleController");
-        }
         MobclickAgent ma = gameObject.GetComponent<MobclickAgent>();
         if (ma == null) {
             gameObject.AddComponent("MobclickAgent");
