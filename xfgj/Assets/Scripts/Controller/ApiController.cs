@@ -5,10 +5,17 @@ using System.Collections.Generic;
 
 public class ApiController {
 
-    private static GameObject obj;
+    private static ApiCaller apiCaller;
 
     static ApiController () {
-        obj = GameObject.Find("InitObj");
+        GameObject obj = GameObject.Find("InitObj");
+        if (obj == null) {
+            throw new Exception("Can't find InitObj");
+        }
+        apiCaller = obj.GetComponent<ApiCaller>();
+        if (apiCaller == null) {
+            throw new Exception("Can't find ApiCaller");
+        }
     }
 
     public static void Authorize (string appKey, ApiCaller.ResponseHandle handle) {
@@ -16,7 +23,7 @@ public class ApiController {
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.APP_KEY, appKey);
         rp.callback = handle;
-        obj.SendMessage("Authorize", rp, SendMessageOptions.RequireReceiver);
+        apiCaller.Authorize(rp);
     }
 
     public static void GetScene (string token, int sceneId, DateTime? modified,
@@ -29,7 +36,7 @@ public class ApiController {
             rp.data.Add(Param.MODIFIED, StringUtil.DateTimeToString((DateTime)modified));
         }
         rp.callback = handle;
-        obj.SendMessage("GetScene", rp, SendMessageOptions.RequireReceiver);
+        apiCaller.GetScene(rp);
     }
 
     public static void GetScenes (string token, int? sceneTypeId,
@@ -41,7 +48,7 @@ public class ApiController {
             rp.data.Add(Param.SCENE_TYPE_ID, "" + sceneTypeId);
         }
         rp.callback = handle;
-        obj.SendMessage("GetScenes", rp, SendMessageOptions.RequireReceiver);
+        apiCaller.GetScenes(rp);
     }
 
     public static void GetAllScenes (string token, DateTime? modified,
@@ -53,7 +60,7 @@ public class ApiController {
             rp.data.Add(Param.LATEST_MODIFIED, StringUtil.DateTimeToString((DateTime)modified));
         }
         rp.callback = handle;
-        obj.SendMessage("GetScenes", rp, SendMessageOptions.RequireReceiver);
+        apiCaller.GetScenes(rp);
     }
 
     public static void GetSceneSnapshot (string token, List<int> sceneIds,
@@ -67,7 +74,7 @@ public class ApiController {
         }
         rp.data.Add(Param.SCENE_IDS, sb.ToString());
         rp.callback = handle;
-        obj.SendMessage("GetSceneSnapshot", rp, SendMessageOptions.RequireReceiver);
+        apiCaller.GetSceneSnapshot(rp);
     }
 
     public static void GetSceneType (string token, int sceneTypeId, DateTime? modified,
@@ -80,7 +87,7 @@ public class ApiController {
             rp.data.Add(Param.MODIFIED, StringUtil.DateTimeToString((DateTime)modified));
         }
         rp.callback = handle;
-        obj.SendMessage("GetSceneType", rp, SendMessageOptions.RequireReceiver);
+        apiCaller.GetSceneType(rp);
     }
 
     public static void GetAllSceneType (string token, ApiCaller.ResponseHandle handle) {
@@ -88,7 +95,7 @@ public class ApiController {
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.TOKEN, token);
         rp.callback = handle;
-        obj.SendMessage("GetAllSceneType", rp, SendMessageOptions.RequireReceiver);
+        apiCaller.GetAllSceneType(rp);
     }
 
     public static void GetProductInScene (string token, int sceneId, ApiCaller.ResponseHandle handle) {
@@ -97,7 +104,7 @@ public class ApiController {
         rp.data.Add(Param.SCENE_ID, "" + sceneId);
         rp.data.Add(Param.TOKEN, token);
         rp.callback = handle;
-        obj.SendMessage("GetProductInScene", rp, SendMessageOptions.RequireReceiver);
+        apiCaller.GetProductInScene(rp);
     }
 
     public static void GetProduct (string token, int productId, DateTime? modified,
@@ -110,7 +117,7 @@ public class ApiController {
             rp.data.Add(Param.MODIFIED, StringUtil.DateTimeToString((DateTime)modified));
         }
         rp.callback = handle;
-        obj.SendMessage("GetProduct", rp, SendMessageOptions.RequireReceiver);
+        apiCaller.GetProduct(rp);
     }
 
     public static void GetItem (string token, int numIid, DateTime? modified,
@@ -123,7 +130,7 @@ public class ApiController {
             rp.data.Add(Param.MODIFIED, StringUtil.DateTimeToString((DateTime)modified));
         }
         rp.callback = handle;
-        obj.SendMessage("GetItem", rp, SendMessageOptions.RequireReceiver);
+        apiCaller.GetItem(rp);
     }
 
     public static void GetItemWithProductId (string token, int productId, ApiCaller.ResponseHandle handle) {
@@ -132,7 +139,7 @@ public class ApiController {
         rp.data.Add(Param.PRODUCT_ID, "" + productId);
         rp.data.Add(Param.TOKEN, token);
         rp.callback = handle;
-        obj.SendMessage("GetItemWithProductId", rp, SendMessageOptions.RequireReceiver);
+        apiCaller.GetItemWithProductId(rp);
     }
 
     public static void GetProducer (string token, int producerId, ApiCaller.ResponseHandle handle) {
@@ -141,7 +148,7 @@ public class ApiController {
         rp.data.Add(Param.PRODUCER_ID, "" + producerId);
         rp.data.Add(Param.TOKEN, token);
         rp.callback = handle;
-        obj.SendMessage("GetProducer", rp, SendMessageOptions.RequireReceiver);
+        apiCaller.GetProducer(rp);
     }
 
     public static void GetProductsWithProducerId (string token, int producerId,
@@ -151,7 +158,7 @@ public class ApiController {
         rp.data.Add(Param.PRODUCER_ID, "" + producerId);
         rp.data.Add(Param.TOKEN, token);
         rp.callback = handle;
-        obj.SendMessage("GetProductsWithProducerId", rp, SendMessageOptions.RequireReceiver);
+        apiCaller.GetProductsWithProducerId(rp);
     }
 
     public static void GetCategory (string token, int cid, ApiCaller.ResponseHandle handle) {
@@ -160,7 +167,7 @@ public class ApiController {
         rp.data.Add(Param.CID, "" + cid);
         rp.data.Add(Param.TOKEN, token);
         rp.callback = handle;
-        obj.SendMessage("GetCategory", rp, SendMessageOptions.RequireReceiver);
+        apiCaller.GetCategory(rp);
     }
 
     public static void GetCategorys (string token, int? parentCid, ApiCaller.ResponseHandle handle) {
@@ -171,7 +178,7 @@ public class ApiController {
             rp.data.Add(Param.PARENT_CID, "" + (int)parentCid);
         }
         rp.callback = handle;
-        obj.SendMessage("GetCategorys", rp, SendMessageOptions.RequireReceiver);
+        apiCaller.GetCategorys(rp);
     }
 
     public static void GetRecommends (string token, ApiCaller.ResponseHandle handle) {
@@ -179,7 +186,7 @@ public class ApiController {
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.TOKEN, token);
         rp.callback = handle;
-        obj.SendMessage("GetRecommends", rp, SendMessageOptions.RequireReceiver);
+        apiCaller.GetRecommends(rp);
     }
 
     public static void GetAppSetting (string token) {
@@ -199,7 +206,7 @@ public class ApiController {
         }
         rp.data.Add(Param.ASSET_IDS, sb.ToString());
         rp.callback = handle;
-        obj.SendMessage("GetAssets", rp, SendMessageOptions.RequireReceiver);
+        apiCaller.GetAssets(rp);
     }
 
     public static void UploadAtlas (string token, string metaData, string unityPath,
@@ -220,7 +227,7 @@ public class ApiController {
             rp.data.Add(Param.ASSET_ANDROID, androidPath);
         }
         rp.callback = handle;
-        obj.SendMessage("UploadAssetBundle", rp, SendMessageOptions.RequireReceiver);
+        apiCaller.UploadAssetBundle(rp);
     }
 
     public static void UploadScene (string token, string metaData, string unityPath,
@@ -241,7 +248,7 @@ public class ApiController {
             rp.data.Add(Param.ASSET_ANDROID, androidPath);
         }
         rp.callback = handle;
-        obj.SendMessage("UploadAssetBundle", rp, SendMessageOptions.RequireReceiver);
+        apiCaller.UploadAssetBundle(rp);
     }
 
     public static void GetPictures (string token, List<string> pictureIds,
@@ -261,7 +268,7 @@ public class ApiController {
         }
         rp.data.Add(Param.PICTURES, sb.ToString());
         rp.callback = handle;
-        obj.SendMessage("GetPictures", rp, SendMessageOptions.RequireReceiver);
+        apiCaller.GetPictures(rp);
     }
 
     public static void CheckUpdate (string appName, string appVersion,
@@ -271,7 +278,7 @@ public class ApiController {
         rp.data.Add(Param.APP_NAME, appName);
         rp.data.Add(Param.APP_VERSION, appVersion);
         rp.callback = handle;
-        obj.SendMessage("CheckUpdate", rp, SendMessageOptions.RequireReceiver);
+        apiCaller.CheckUpdate(rp);
     }
 }
 
