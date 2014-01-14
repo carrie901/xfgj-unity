@@ -49,17 +49,6 @@ public class AppSetting
         }
     }
 
-    private const string WIFI_LIMIT = "wifi_limit";
-    public bool wifiLimit {
-        get {
-            return PlayerPrefs.GetInt(WIFI_LIMIT, 1) == 1 ? true : false;
-        }
-
-        set {
-            PlayerPrefs.SetInt(WIFI_LIMIT, value ? 1 : 0);
-        }
-    }
-
     private const string AUTHORIZE_TIME = "authorize_time";
     public DateTime authorizeTime {
         get {
@@ -68,6 +57,17 @@ public class AppSetting
 
         set {
             PlayerPrefs.SetString(AUTHORIZE_TIME, StringUtil.DateTimeToString(value));
+        }
+    }
+
+    private const string WIFI_LIMIT = "wifi_limit";
+    public bool wifiLimit {
+        get {
+            return PlayerPrefs.GetInt(WIFI_LIMIT, 1) == 1;
+        }
+
+        set {
+            PlayerPrefs.SetInt(WIFI_LIMIT, value ? 1 : 0);
         }
     }
 }

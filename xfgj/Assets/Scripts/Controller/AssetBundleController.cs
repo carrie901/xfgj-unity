@@ -53,6 +53,15 @@ public class AssetBundleController : MonoBehaviour
     }
 
     private IEnumerator LoadSceneProgram (string path, int version, string[] names, NotifyProgress notify) {
+        if (!Caching.IsVersionCached(path, version)
+            && (Application.internetReachability == NetworkReachability.NotReachable
+                || (Application.internetReachability == NetworkReachability.ReachableViaCarrierDataNetwork
+                    && AppSetting.getInstance().wifiLimit))) {
+            Debug.Log("can't download");
+            if (notify != null) {
+                notify(-1.0f);
+            }
+        }
         WWW www = WWW.LoadFromCacheOrDownload(path, version);
         yield return www;
         if (www.error != null) {
@@ -80,6 +89,15 @@ public class AssetBundleController : MonoBehaviour
     }
 
     private IEnumerator LoadObjectProgram (string path, int version, string[] names, LoadCallback callback) {
+        if (!Caching.IsVersionCached(path, version)
+            && (Application.internetReachability == NetworkReachability.NotReachable
+                || (Application.internetReachability == NetworkReachability.ReachableViaCarrierDataNetwork
+                    && AppSetting.getInstance().wifiLimit))) {
+            Debug.Log("can't download");
+            if (callback != null) {
+                callback(null);
+            }
+        }
         WWW www = WWW.LoadFromCacheOrDownload(path, version);
         yield return www;
         if (www.error != null) {
