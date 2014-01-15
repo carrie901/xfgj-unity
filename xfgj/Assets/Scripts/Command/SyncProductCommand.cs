@@ -3,9 +3,9 @@ using System;
 public class SyncProductCommand : BaseCommand {
 
     private int sceneId;
-    private UIDelegate.Update callback;
+    private UpdateDelegate callback;
 
-    public SyncProductCommand (int sceneId, UIDelegate.Update callback) {
+    public SyncProductCommand (int sceneId, UpdateDelegate callback) {
         this.sceneId = sceneId;
     }
 

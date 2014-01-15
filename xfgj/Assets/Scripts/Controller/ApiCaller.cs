@@ -2,10 +2,10 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 
+public delegate void ResponseHandle(string res);
+
 [ExecuteInEditMode]
 public class ApiCaller : MonoBehaviour {
-
-    public delegate void ResponseHandle(string res);
 
     public class RequestParams {
         public Dictionary<string, string> data;

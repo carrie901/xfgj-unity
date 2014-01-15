@@ -1,6 +1,4 @@
 using System;
 
-public class UIDelegate {
-    public delegate void Update (object obj);
-}
+public delegate void UpdateDelegate (object obj);
 

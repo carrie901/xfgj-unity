@@ -4,8 +4,8 @@ using System.Collections.Generic;
 
 public class SyncScenesCommand : BaseCommand {
 
-    private UIDelegate.Update callback;
-    public UIDelegate.Update Callback {
+    private UpdateDelegate callback;
+    public UpdateDelegate Callback {
         set {
             callback = value;
         }
@@ -23,8 +23,7 @@ public class SyncScenesCommand : BaseCommand {
         if (scene != null) {
             dt = scene.modified;
         }
-        ApiController.GetAllScenes(AppSetting.getInstance().token, dt,
-                                   new ApiCaller.ResponseHandle(handle));
+        ApiController.GetAllScenes(AppSetting.getInstance().token, dt, handle);
     }
 
     private void handle (string str) {

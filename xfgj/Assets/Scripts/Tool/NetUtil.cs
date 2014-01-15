@@ -5,7 +5,7 @@ using System.Collections.Generic;
 public class NetUtil {
 
     public static IEnumerator Post (string url, Dictionary<string, string> post,
-                                    ApiCaller.ResponseHandle callback) {
+                                    ResponseHandle callback) {
         WWWForm form = new WWWForm();
         foreach(KeyValuePair<string, string> postArg in post) {
             form.AddField(postArg.Key, postArg.Value);
@@ -27,7 +27,7 @@ public class NetUtil {
 
     public static IEnumerator Upload (string url, Dictionary<string, string> post,
                                       Dictionary<string, string> files,
-                                      ApiCaller.ResponseHandle callback) {
+                                      ResponseHandle callback) {
         WWWForm form = new WWWForm();
         foreach(KeyValuePair<string, string> postArg in post) {
             form.AddField(postArg.Key, postArg.Value);
@@ -53,7 +53,7 @@ public class NetUtil {
         }
     }
 
-    public static IEnumerator Get (string url, ApiCaller.ResponseHandle callback) {
+    public static IEnumerator Get (string url, ResponseHandle callback) {
         WWW www = new WWW (url);
         yield return www;
         if (www.error != null) {

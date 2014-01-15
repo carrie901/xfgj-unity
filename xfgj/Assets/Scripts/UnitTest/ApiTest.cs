@@ -12,7 +12,7 @@ public class ApiTest : UUnitTestCase
         ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.APP_KEY, Config.APP_KEY);
-        rp.callback = new ApiCaller.ResponseHandle(AuthorizeCallback);
+        rp.callback = AuthorizeCallback;
         obj.SendMessage("Authorize", rp, SendMessageOptions.RequireReceiver);
     }
 
@@ -28,7 +28,7 @@ public class ApiTest : UUnitTestCase
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.SCENE_ID, "100001");
         rp.data.Add(Param.TOKEN, AppSetting.getInstance().token);
-        rp.callback = new ApiCaller.ResponseHandle(GetSceneCallback);
+        rp.callback = GetSceneCallback;
         obj.SendMessage("GetScene", rp, SendMessageOptions.RequireReceiver);
     }
 
@@ -47,7 +47,7 @@ public class ApiTest : UUnitTestCase
         ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.TOKEN, AppSetting.getInstance().token);
-        rp.callback = new ApiCaller.ResponseHandle(GetScenesCallback);
+        rp.callback = GetScenesCallback;
         obj.SendMessage("GetScenes", rp, SendMessageOptions.RequireReceiver);
     }
 
@@ -68,7 +68,7 @@ public class ApiTest : UUnitTestCase
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.SCENE_TYPE_ID, "100001");
         rp.data.Add(Param.TOKEN, AppSetting.getInstance().token);
-        rp.callback = new ApiCaller.ResponseHandle(GetSceneTypeCallback);
+        rp.callback = GetSceneTypeCallback;
         obj.SendMessage("GetSceneType", rp, SendMessageOptions.RequireReceiver);
     }
 
@@ -85,7 +85,7 @@ public class ApiTest : UUnitTestCase
         ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.TOKEN, AppSetting.getInstance().token);
-        rp.callback = new ApiCaller.ResponseHandle(GetAllSceneTypeCallback);
+        rp.callback = GetAllSceneTypeCallback;
         obj.SendMessage("GetAllSceneType", rp, SendMessageOptions.RequireReceiver);
     }
 
@@ -104,7 +104,7 @@ public class ApiTest : UUnitTestCase
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.SCENE_ID, "100001");
         rp.data.Add(Param.TOKEN, AppSetting.getInstance().token);
-        rp.callback = new ApiCaller.ResponseHandle(GetProductInSceneCallback);
+        rp.callback = GetProductInSceneCallback;
         obj.SendMessage("GetProductInScene", rp, SendMessageOptions.RequireReceiver);
     }
 
@@ -120,7 +120,7 @@ public class ApiTest : UUnitTestCase
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.PRODUCT_ID, "100001");
         rp.data.Add(Param.TOKEN, AppSetting.getInstance().token);
-        rp.callback = new ApiCaller.ResponseHandle(GetProductCallback);
+        rp.callback = GetProductCallback;
         obj.SendMessage("GetProduct", rp, SendMessageOptions.RequireReceiver);
     }
 
@@ -145,7 +145,7 @@ public class ApiTest : UUnitTestCase
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.PRODUCER_ID, "100001");
         rp.data.Add(Param.TOKEN, AppSetting.getInstance().token);
-        rp.callback = new ApiCaller.ResponseHandle(GetProducerCallback);
+        rp.callback = GetProducerCallback;
         obj.SendMessage("GetProducer", rp, SendMessageOptions.RequireReceiver);
     }
 
@@ -165,7 +165,7 @@ public class ApiTest : UUnitTestCase
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.PRODUCER_ID, "100001");
         rp.data.Add(Param.TOKEN, AppSetting.getInstance().token);
-        rp.callback = new ApiCaller.ResponseHandle(GetProductsWithProducerIdCallback);
+        rp.callback = GetProductsWithProducerIdCallback;
         obj.SendMessage("GetProductsWithProducerId", rp, SendMessageOptions.RequireReceiver);
     }
 

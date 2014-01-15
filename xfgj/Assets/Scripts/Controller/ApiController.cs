@@ -18,7 +18,7 @@ public class ApiController {
         }
     }
 
-    public static void Authorize (string appKey, ApiCaller.ResponseHandle handle) {
+    public static void Authorize (string appKey, ResponseHandle handle) {
         ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.APP_KEY, appKey);
@@ -27,7 +27,7 @@ public class ApiController {
     }
 
     public static void GetScene (string token, int sceneId, DateTime? modified,
-                                 ApiCaller.ResponseHandle handle) {
+                                 ResponseHandle handle) {
         ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.SCENE_ID, "" + sceneId);
@@ -40,7 +40,7 @@ public class ApiController {
     }
 
     public static void GetScenes (string token, int? sceneTypeId,
-                                  ApiCaller.ResponseHandle handle) {
+                                  ResponseHandle handle) {
         ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.TOKEN, token);
@@ -52,7 +52,7 @@ public class ApiController {
     }
 
     public static void GetAllScenes (string token, DateTime? modified,
-                                     ApiCaller.ResponseHandle handle) {
+                                     ResponseHandle handle) {
         ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.TOKEN, token);
@@ -64,7 +64,7 @@ public class ApiController {
     }
 
     public static void GetSceneSnapshot (string token, List<int> sceneIds,
-                                         ApiCaller.ResponseHandle handle) {
+                                         ResponseHandle handle) {
         ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.TOKEN, token);
@@ -78,7 +78,7 @@ public class ApiController {
     }
 
     public static void GetSceneType (string token, int sceneTypeId, DateTime? modified,
-                                     ApiCaller.ResponseHandle handle) {
+                                     ResponseHandle handle) {
         ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.SCENE_TYPE_ID, "" + sceneTypeId);
@@ -90,7 +90,7 @@ public class ApiController {
         apiCaller.GetSceneType(rp);
     }
 
-    public static void GetAllSceneType (string token, ApiCaller.ResponseHandle handle) {
+    public static void GetAllSceneType (string token, ResponseHandle handle) {
         ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.TOKEN, token);
@@ -98,7 +98,7 @@ public class ApiController {
         apiCaller.GetAllSceneType(rp);
     }
 
-    public static void GetProductInScene (string token, int sceneId, ApiCaller.ResponseHandle handle) {
+    public static void GetProductInScene (string token, int sceneId, ResponseHandle handle) {
         ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.SCENE_ID, "" + sceneId);
@@ -108,7 +108,7 @@ public class ApiController {
     }
 
     public static void GetProduct (string token, int productId, DateTime? modified,
-                                   ApiCaller.ResponseHandle handle) {
+                                   ResponseHandle handle) {
         ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.PRODUCT_ID, "" + productId);
@@ -121,7 +121,7 @@ public class ApiController {
     }
 
     public static void GetItem (string token, int numIid, DateTime? modified,
-                                ApiCaller.ResponseHandle handle) {
+                                ResponseHandle handle) {
         ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.PRODUCT_ID, "" + numIid);
@@ -133,7 +133,7 @@ public class ApiController {
         apiCaller.GetItem(rp);
     }
 
-    public static void GetItemWithProductId (string token, int productId, ApiCaller.ResponseHandle handle) {
+    public static void GetItemWithProductId (string token, int productId, ResponseHandle handle) {
         ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.PRODUCT_ID, "" + productId);
@@ -142,7 +142,7 @@ public class ApiController {
         apiCaller.GetItemWithProductId(rp);
     }
 
-    public static void GetProducer (string token, int producerId, ApiCaller.ResponseHandle handle) {
+    public static void GetProducer (string token, int producerId, ResponseHandle handle) {
         ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.PRODUCER_ID, "" + producerId);
@@ -152,7 +152,7 @@ public class ApiController {
     }
 
     public static void GetProductsWithProducerId (string token, int producerId,
-                                                  ApiCaller.ResponseHandle handle) {
+                                                  ResponseHandle handle) {
         ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.PRODUCER_ID, "" + producerId);
@@ -161,7 +161,7 @@ public class ApiController {
         apiCaller.GetProductsWithProducerId(rp);
     }
 
-    public static void GetCategory (string token, int cid, ApiCaller.ResponseHandle handle) {
+    public static void GetCategory (string token, int cid, ResponseHandle handle) {
         ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.CID, "" + cid);
@@ -170,7 +170,7 @@ public class ApiController {
         apiCaller.GetCategory(rp);
     }
 
-    public static void GetCategorys (string token, int? parentCid, ApiCaller.ResponseHandle handle) {
+    public static void GetCategorys (string token, int? parentCid, ResponseHandle handle) {
         ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.TOKEN, token);
@@ -181,7 +181,7 @@ public class ApiController {
         apiCaller.GetCategorys(rp);
     }
 
-    public static void GetRecommends (string token, ApiCaller.ResponseHandle handle) {
+    public static void GetRecommends (string token, ResponseHandle handle) {
         ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.TOKEN, token);
@@ -193,7 +193,7 @@ public class ApiController {
 
     }
 
-    public static void GetAssets (string token, List<int> assetIds, ApiCaller.ResponseHandle handle) {
+    public static void GetAssets (string token, List<int> assetIds, ResponseHandle handle) {
         ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.TOKEN, token);
@@ -211,7 +211,7 @@ public class ApiController {
 
     public static void UploadAtlas (string token, string metaData, string unityPath,
                                     string iphonePath, string androidPath,
-                                    ApiCaller.ResponseHandle handle) {
+                                    ResponseHandle handle) {
         ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.TOKEN, token);
@@ -232,7 +232,7 @@ public class ApiController {
 
     public static void UploadScene (string token, string metaData, string unityPath,
                                     string iphonePath, string androidPath,
-                                    ApiCaller.ResponseHandle handle) {
+                                    ResponseHandle handle) {
         ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.TOKEN, token);
@@ -252,7 +252,7 @@ public class ApiController {
     }
 
     public static void GetPictures (string token, List<string> pictureIds,
-                                    ApiCaller.ResponseHandle handle) {
+                                    ResponseHandle handle) {
         ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.TOKEN, token);
@@ -272,7 +272,7 @@ public class ApiController {
     }
 
     public static void CheckUpdate (string appName, string appVersion,
-                                    ApiCaller.ResponseHandle handle) {
+                                    ResponseHandle handle) {
         ApiCaller.RequestParams rp = new ApiCaller.RequestParams();
         rp.data = new Dictionary<string, string>();
         rp.data.Add(Param.APP_NAME, appName);

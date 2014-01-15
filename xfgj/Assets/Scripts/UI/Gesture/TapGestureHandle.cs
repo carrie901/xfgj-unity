@@ -3,9 +3,8 @@ using System.Collections;
 
 public class TapGestureHandle : MonoBehaviour {
 
-
-    private GestureDelegate.SelectObject selectObject;
-    public GestureDelegate.SelectObject SelectCallback {
+    private SelectObjectDelegate selectObject;
+    public SelectObjectDelegate SelectCallback {
         set {
             selectObject = value;
         }

@@ -7,8 +7,7 @@ public class SyncCategoryCommand : BaseCommand {
     }
 
     public override void execute () {
-        ApiController.GetCategorys(AppSetting.getInstance().token, null,
-                                   new ApiCaller.ResponseHandle(handle));
+        ApiController.GetCategorys(AppSetting.getInstance().token, null, handle);
     }
 
     private void handle (string str) {

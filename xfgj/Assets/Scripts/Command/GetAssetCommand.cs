@@ -4,8 +4,8 @@ using System.Collections.Generic;
 
 public class GetAssetCommand : BaseCommand {
 
-    private UIDelegate.Update callback;
-    public UIDelegate.Update Callback {
+    private UpdateDelegate callback;
+    public UpdateDelegate Callback {
         set {
             callback = value;
         }
