@@ -6,10 +6,8 @@ public class ShowRoomViewController : MonoBehaviour {
 
     public GameObject root;
     public GameObject table;
-    public GameObject loadingPanel;
 
     private UITable tableComp;
-    private UIPanel loadingComp;
     private ScenesViewController scenesViewController;
 
     private List<SceneTypeItemView> itemViewList;
@@ -22,7 +20,6 @@ public class ShowRoomViewController : MonoBehaviour {
     void Awake () {
         tableComp = table.GetComponent<UITable>();
         tableComp.onReposition = OnReposition;
-        loadingComp = loadingPanel.GetComponent<UIPanel>();
         scenesViewController = gameObject.GetComponent<ScenesViewController>();
         scenesViewController.dataSource = DataSource;
         itemViewList = new List<SceneTypeItemView>();
@@ -31,16 +28,16 @@ public class ShowRoomViewController : MonoBehaviour {
     }
 
     void Start () {
-        ToggleLoading(true);
+        LoadViewController.ShowSimpleLoad();
         AuthorizeCommand authCmd = new AuthorizeCommand();
         authCmd.Callback = AfterAuthorize;
         authCmd.execute();
     }
 
     void OnEnable () {
-        ToggleLoading(true);
+        LoadViewController.ShowSimpleLoad();
         GenerateView();
-        ToggleLoading(false);
+        LoadViewController.HideSimpleLoad();
     }
 
     void OnDisable () {
@@ -49,17 +46,6 @@ public class ShowRoomViewController : MonoBehaviour {
     #endregion
 
     #region private methods
-    private void ToggleLoading (bool show) {
-        if (loadingComp != null) {
-            if (show) {
-                loadingComp.depth = NGUITools.CalculateNextDepth(gameObject);
-            }
-            else {
-                loadingComp.depth = -1;
-            }
-        }
-    }
-
     private void GenerateView () {
         Debug.Log("GenerateView");
         ClearView();
@@ -142,7 +128,7 @@ public class ShowRoomViewController : MonoBehaviour {
     private void AfterAuthorize (object obj) {
         Debug.Log("AfterAuthorize");
         if (obj != null && !(bool)obj) {
-            ToggleLoading(false);
+            LoadViewController.HideSimpleLoad();
             return;
         }
         SyncSceneTypeCommand cmd = new SyncSceneTypeCommand();
@@ -153,11 +139,11 @@ public class ShowRoomViewController : MonoBehaviour {
     private void AfterSyncSceneType (object obj) {
         Debug.Log("AfterSyncSceneType");
         if (obj != null && !(bool)obj) {
-            ToggleLoading(false);
+            LoadViewController.HideSimpleLoad();
             return;
         }
         GenerateView();
-        ToggleLoading(false);
+        LoadViewController.HideSimpleLoad();
     }
 
     private void AfterGetPicture (object obj) {

@@ -23,11 +23,10 @@ public class AssetBundleManager : MonoBehaviour {
     private Queue<Operation> operQueue;
     private bool isRunning;
 
-    private static GameObject obj;
     private static AssetBundleManager manager;
     #region MonoBehaviour
     void Awake () {
-        obj = GameObject.Find("InitObj");
+        manager = this;
         operQueue = new Queue<Operation>();
     }
 
@@ -37,7 +36,10 @@ public class AssetBundleManager : MonoBehaviour {
 
     public static void GetObject (string path, int version, string[] names, LoadCallback callback) {
         if (manager == null) {
-            manager = obj.GetComponent<AssetBundleManager>();
+            if (callback != null) {
+                callback(null);
+            }
+            return;
         }
         manager.LoadObject(path, version, names, callback);
     }

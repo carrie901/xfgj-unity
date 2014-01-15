@@ -7,10 +7,8 @@ using LitJson;
 public class RecommendViewController : MonoBehaviour {
 
     public GameObject table;
-    public GameObject loadingPanel;
 
     private UITable tableComp;
-    private UIPanel loadingComp;
 
     private List<RecommendItemView> itemViewList;
     private List<string> picIdList;
@@ -20,7 +18,6 @@ public class RecommendViewController : MonoBehaviour {
     void Awake () {
         tableComp = table.GetComponent<UITable>();
         tableComp.onReposition = OnReposition;
-        loadingComp = loadingPanel.GetComponent<UIPanel>();
         itemViewList = new List<RecommendItemView>();
         picIdList = new List<string>();
         assetIdList = new List<int>();
@@ -36,10 +33,10 @@ public class RecommendViewController : MonoBehaviour {
     }
 
     void OnEnable () {
-        ToggleLoading(true);
+        LoadViewController.ShowSimpleLoad();
         ClearView();
         GenerateView();
-        ToggleLoading(false);
+        LoadViewController.HideSimpleLoad();
     }
 
     void OnDisable () {
@@ -48,17 +45,6 @@ public class RecommendViewController : MonoBehaviour {
     #endregion
 
     #region private methods
-    private void ToggleLoading (bool show) {
-        if (loadingComp != null) {
-            if (show) {
-                loadingComp.depth = NGUITools.CalculateNextDepth(gameObject);
-            }
-            else {
-                loadingComp.depth = -1;
-            }
-        }
-    }
-
     public List<Recommend> GetTestData () {
         List<Recommend> list = new List<Recommend>();
         for (int i = 0; i < 9; i++) {
@@ -163,6 +149,11 @@ public class RecommendViewController : MonoBehaviour {
 
     private void ItemClick (GameObject go) {
         Debug.Log("Recommend click");
+#if UNITY_IPHONE
+        IosPlugin.OpenWebsite("http://www.baidu.com");
+#elif UNITY_ANDROID
+        Debug.Log("Android will open website");
+#endif
     }
 
     private void AfterGetRecomends (object obj) {

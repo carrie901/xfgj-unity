@@ -12,14 +12,12 @@ public class ScenesViewController : MonoBehaviour {
     public GameObject root;
     public GameObject scrollPanel;
     public GameObject table;
-    public GameObject loadingPanel;
 
     public DataSource dataSource;
 
     private UIScrollView scrollComp;
     private UIPanel scrollPanelComp;
     private UITable tableComp;
-    private UIPanel loadingComp;
 
     private List<SceneItemView> itemViewList;
     private List<int> sceneIdList;
@@ -31,7 +29,6 @@ public class ScenesViewController : MonoBehaviour {
         scrollPanelComp = scrollPanel.GetComponent<UIPanel>();
         tableComp = table.GetComponent<UITable>();
         tableComp.onReposition = OnReposition;
-        loadingComp = loadingPanel.GetComponent<UIPanel>();
         itemViewList = new List<SceneItemView>();
         sceneIdList = new List<int>();
     }
@@ -43,10 +40,10 @@ public class ScenesViewController : MonoBehaviour {
     }
 
     void OnEnable () {
-        ToggleLoading(true);
+        LoadViewController.ShowSimpleLoad();
         ClearView();
         GenerateView();
-        ToggleLoading(false);
+        LoadViewController.HideSimpleLoad();
     }
 
     void OnDisable () {
@@ -56,17 +53,6 @@ public class ScenesViewController : MonoBehaviour {
     #endregion
 
     #region private methods
-    private void ToggleLoading (bool show) {
-        if (loadingComp != null) {
-            if (show) {
-                loadingComp.depth = NGUITools.CalculateNextDepth(gameObject);
-            }
-            else {
-                loadingComp.depth = -1;
-            }
-        }
-    }
-
     private void GenerateView () {
         Debug.Log("GenerateView");
         sceneIdList.Clear();
@@ -115,9 +101,9 @@ public class ScenesViewController : MonoBehaviour {
         if (Math.Abs(scrollPanel.transform.localPosition.y + scrollPanelComp.clipRange.w / 2
                      + table.transform.GetChild(table.transform.childCount - 1).localPosition.y) < 5) {
             Debug.Log("scroll to the bottom");
-            ToggleLoading(true);
+            LoadViewController.ShowSimpleLoad();
             GenerateView();
-            ToggleLoading(false);
+            LoadViewController.HideSimpleLoad();
         }
     }
 
@@ -149,7 +135,7 @@ public class ScenesViewController : MonoBehaviour {
             ClearView();
             GenerateView();
         }
-        ToggleLoading(false);
+        LoadViewController.HideSimpleLoad();
     }
 
     private void AfterGetSnapshot (object obj) {

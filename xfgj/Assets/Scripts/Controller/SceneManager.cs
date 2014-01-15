@@ -10,11 +10,10 @@ public class SceneManager : MonoBehaviour {
     private NotifyProgress notifyCallback;
     private AsyncOperation oper;
 
-    private static GameObject obj;
     private static SceneManager manager;
     #region MonoBehaviour
-    void Start () {
-        obj = GameObject.Find("InitObj");
+    void Awake () {
+        manager = this;
     }
     
     void Update () {
@@ -30,7 +29,10 @@ public class SceneManager : MonoBehaviour {
 
     public static void LoadLevelAdditive(string path, int version, string name, NotifyProgress callback) {
         if (manager == null) {
-            manager = obj.GetComponent<SceneManager>();
+            if (callback != null) {
+                callback(LOAD_FAIL);
+            }
+            return;
         }
         manager.LoadScene(path, version, name, callback);
     }
