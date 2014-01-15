@@ -4,7 +4,6 @@ using System;
 public class SceneViewController : MonoBehaviour {
 
     public GameObject root;
-    public GameObject loadPanel;
     public GameObject productPanel;
     public int sceneId;
 
@@ -17,6 +16,24 @@ public class SceneViewController : MonoBehaviour {
 
     #region MonoBehaviour
     void Awake () {
+        UIEventListener.Get(leftBtn).onClick = TurnLeft;
+        UIEventListener.Get(rightBtn).onClick = TurnRight;
+    }
+
+    void Start () {
+    }
+
+    void Update () {
+        if (oper != null) {
+            NotifyProgress(oper.progress);
+            if (oper.isDone) {
+                oper = null;
+            }
+        }
+    }
+
+    void OnEnable () {
+        LoadViewController.ShowLoadProgress();
         if (sceneId == 0) {
             Debug.Log("SceneViewController sceneId not initlized");
             return;
@@ -35,20 +52,10 @@ public class SceneViewController : MonoBehaviour {
             }*/
             oper = Application.LoadLevelAdditiveAsync("" + scene.sceneId);
         }
-        UIEventListener.Get(leftBtn).onClick = TurnLeft;
-        UIEventListener.Get(rightBtn).onClick = TurnRight;
     }
 
-    void Start () {
-    }
-
-    void Update () {
-        if (oper != null) {
-            NotifyProgress(oper.progress);
-            if (oper.isDone) {
-                oper = null;
-            }
-        }
+    void OnDisable () {
+        sceneId = 0;
     }
 
     #endregion
@@ -64,13 +71,12 @@ public class SceneViewController : MonoBehaviour {
     private void LoadScene (Asset asset) {
         SceneManager.LoadLevelAdditive(AppSetting.getInstance().assetUrl + asset.name,
                                        asset.version, "" + scene.sceneId, NotifyProgress);
-        loadPanel.SetActive(true);
     }
 
     private void NotifyProgress (float progress) {
         Debug.Log("Loading progress is " + progress);
         if (progress == 1.0f) {
-            loadPanel.SetActive(false);
+            LoadViewController.HideLoadProgress();
             GameObject roamCamera = GameObject.FindGameObjectWithTag(Config.TAG_ROAM_CAMERA);
             if (roamCamera != null) {
                 CameraRoamController cc = roamCamera.GetComponent<CameraRoamController>();
@@ -87,6 +93,9 @@ public class SceneViewController : MonoBehaviour {
         }
         else if (progress == -1.0f) {
             //TODO
+        }
+        else {
+            LoadViewController.NotifyProgress(progress);
         }
     }
 

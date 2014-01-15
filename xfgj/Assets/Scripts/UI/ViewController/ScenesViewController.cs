@@ -40,10 +40,10 @@ public class ScenesViewController : MonoBehaviour {
     }
 
     void OnEnable () {
-        LoadViewController.ShowSimpleLoad();
+        LoadViewController.ShowLoadIndicator();
         ClearView();
         GenerateView();
-        LoadViewController.HideSimpleLoad();
+        LoadViewController.HideLoadIndicator();
     }
 
     void OnDisable () {
@@ -101,9 +101,9 @@ public class ScenesViewController : MonoBehaviour {
         if (Math.Abs(scrollPanel.transform.localPosition.y + scrollPanelComp.clipRange.w / 2
                      + table.transform.GetChild(table.transform.childCount - 1).localPosition.y) < 5) {
             Debug.Log("scroll to the bottom");
-            LoadViewController.ShowSimpleLoad();
+            LoadViewController.ShowLoadIndicator();
             GenerateView();
-            LoadViewController.HideSimpleLoad();
+            LoadViewController.HideLoadIndicator();
         }
     }
 
@@ -135,7 +135,7 @@ public class ScenesViewController : MonoBehaviour {
             ClearView();
             GenerateView();
         }
-        LoadViewController.HideSimpleLoad();
+        LoadViewController.HideLoadIndicator();
     }
 
     private void AfterGetSnapshot (object obj) {

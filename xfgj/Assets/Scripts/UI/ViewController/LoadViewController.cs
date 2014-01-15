@@ -8,14 +8,21 @@ public class LoadViewController : MonoBehaviour {
 
     private static LoadViewController lvc;
 
-    public GameObject simpleView;
+    public GameObject indicatorView;
+    public GameObject progressView;
 
-    private UIPanel simplePanel;
+    private UIPanel indicatorPanel;
+    private UIPanel progressPanel;
+    private UISlider progressSlider;
+    private UILabel tipLabel;
 
     #region MonoBehaviour
     void Awake () {
         lvc = this;
-        simplePanel = simpleView.GetComponent<UIPanel>();
+        indicatorPanel = indicatorView.GetComponent<UIPanel>();
+        progressPanel = progressView.GetComponent<UIPanel>();
+        progressSlider = progressView.transform.Find("Progress Bar").gameObject.GetComponent<UISlider>();
+        tipLabel = progressView.transform.Find("Tip").gameObject.GetComponent<UILabel>();
     }
 
     void Start () {
@@ -24,25 +31,51 @@ public class LoadViewController : MonoBehaviour {
     #endregion
 
     #region static
-    public static void ShowSimpleLoad () {
-        lvc.ShowSimpleView();
+    public static void ShowLoadIndicator () {
+        lvc.ShowIndicatorView();
     }
 
-    public static void HideSimpleLoad () {
-        lvc.StartCoroutine(lvc.HideSimpleView());
+    public static void HideLoadIndicator () {
+        lvc.StartCoroutine(lvc.HideIndicatorView());
+    }
+
+    public static void ShowLoadProgress () {
+        lvc.ShowProgressView();
+    }
+
+    public static void HideLoadProgress () {
+        lvc.HideProgressView();
+    }
+
+    public static void NotifyProgress (float progress) {
+        lvc.UpdateProgress(progress);
     }
     #endregion
 
     #region private
-    private void ShowSimpleView () {
-        simpleView.SetActive(true);
-        simplePanel.depth = SHOW_DEPTH;
+    private void ShowIndicatorView () {
+        indicatorView.SetActive(true);
+        indicatorPanel.depth = SHOW_DEPTH;
     }
 
-    private IEnumerator HideSimpleView () {
+    private IEnumerator HideIndicatorView () {
         yield return new WaitForSeconds(2);
-        simplePanel.depth = HIDE_DEPTH;
-        simpleView.SetActive(false);
+        indicatorPanel.depth = HIDE_DEPTH;
+        indicatorView.SetActive(false);
+    }
+
+    private void ShowProgressView () {
+        progressView.SetActive(true);
+        progressPanel.depth = SHOW_DEPTH;
+    }
+
+    private void HideProgressView () {
+        progressPanel.depth = HIDE_DEPTH;
+        progressView.SetActive(false);
+    }
+
+    private void UpdateProgress (float progress) {
+        progressSlider.value = progress;
     }
     #endregion
 }

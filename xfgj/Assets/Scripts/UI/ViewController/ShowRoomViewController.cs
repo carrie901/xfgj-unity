@@ -28,16 +28,16 @@ public class ShowRoomViewController : MonoBehaviour {
     }
 
     void Start () {
-        LoadViewController.ShowSimpleLoad();
+        LoadViewController.ShowLoadIndicator();
         AuthorizeCommand authCmd = new AuthorizeCommand();
         authCmd.Callback = AfterAuthorize;
         authCmd.execute();
     }
 
     void OnEnable () {
-        LoadViewController.ShowSimpleLoad();
+        LoadViewController.ShowLoadIndicator();
         GenerateView();
-        LoadViewController.HideSimpleLoad();
+        LoadViewController.HideLoadIndicator();
     }
 
     void OnDisable () {
@@ -128,7 +128,7 @@ public class ShowRoomViewController : MonoBehaviour {
     private void AfterAuthorize (object obj) {
         Debug.Log("AfterAuthorize");
         if (obj != null && !(bool)obj) {
-            LoadViewController.HideSimpleLoad();
+            LoadViewController.HideLoadIndicator();
             return;
         }
         SyncSceneTypeCommand cmd = new SyncSceneTypeCommand();
@@ -139,11 +139,11 @@ public class ShowRoomViewController : MonoBehaviour {
     private void AfterSyncSceneType (object obj) {
         Debug.Log("AfterSyncSceneType");
         if (obj != null && !(bool)obj) {
-            LoadViewController.HideSimpleLoad();
+            LoadViewController.HideLoadIndicator();
             return;
         }
         GenerateView();
-        LoadViewController.HideSimpleLoad();
+        LoadViewController.HideLoadIndicator();
     }
 
     private void AfterGetPicture (object obj) {

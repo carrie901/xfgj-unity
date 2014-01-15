@@ -33,10 +33,10 @@ public class RecommendViewController : MonoBehaviour {
     }
 
     void OnEnable () {
-        LoadViewController.ShowSimpleLoad();
+        LoadViewController.ShowLoadIndicator();
         ClearView();
         GenerateView();
-        LoadViewController.HideSimpleLoad();
+        LoadViewController.HideLoadIndicator();
     }
 
     void OnDisable () {
