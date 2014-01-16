@@ -102,7 +102,24 @@ public class SceneViewController : MonoBehaviour {
         }
     }
 
+    private void BackToHome () {
+        GameObject[] arrays = GameObject.FindGameObjectsWithTag(Config.TAG_SCENE);
+        foreach (GameObject go in arrays) {
+            Destroy(go);
+        }
+        arrays = GameObject.FindGameObjectsWithTag(Config.TAG_ROAM_CAMERA);
+        foreach (GameObject go in arrays) {
+            Destroy(go);
+        }
+        arrays = GameObject.FindGameObjectsWithTag(Config.TAG_GESTURE);
+        foreach (GameObject go in arrays) {
+            Destroy(go);
+        }
+        RootViewController.ShowMainView();
+    }
+
     private void TurnLeft (GameObject go) {
+        BackToHome();
     }
 
     private void TurnRight (GameObject go) {

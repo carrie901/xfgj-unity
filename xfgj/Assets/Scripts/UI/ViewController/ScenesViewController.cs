@@ -109,10 +109,7 @@ public class ScenesViewController : MonoBehaviour {
 
     private void ItemClick (GameObject go) {
         Debug.Log("item click now");
-        RootViewController.SwitchParam param = new RootViewController.SwitchParam();
-        param.view = RootViewController.VIEW_SCENE;
-        param.obj = Int32.Parse(go.name.Substring(SceneItemView.GO_PREFIX.Length));
-        root.SendMessage("SwitchView", param, SendMessageOptions.RequireReceiver);
+        RootViewController.ShowSceneView(Int32.Parse(go.name.Substring(SceneItemView.GO_PREFIX.Length)));
     }
 
     private void OnReposition () {

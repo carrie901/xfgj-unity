@@ -3,8 +3,7 @@ using System;
 
 public class RootViewController : MonoBehaviour {
 
-    public static readonly string VIEW_MAIN = "view_main";
-    public static readonly string VIEW_SCENE = "view_scene";
+    private static RootViewController rvc;
 
     public class SwitchParam {
         public string view;
@@ -18,7 +17,7 @@ public class RootViewController : MonoBehaviour {
 
     #region MonoBehaviour
     void Awake () {
-
+        rvc = this;
     }
 
     void Start () {
@@ -27,21 +26,27 @@ public class RootViewController : MonoBehaviour {
 
     #endregion
 
-    #region public
-    public void SwitchView (SwitchParam param) {
-        if (VIEW_MAIN.Equals(param.view)) {
-            Debug.Log("SwitchView mainView");
-            mainView.SetActive(true);
-            sceneView.SetActive(false);
-        }
-        else if (VIEW_SCENE.Equals(param.view)) {
-            Debug.Log("SwitchView sceneView");
-            svc.sceneId = (int)param.obj;
-            mainView.SetActive(false);
-            sceneView.SetActive(true);
-        }
+    #region static
+    public static void ShowSceneView (int sceneId) {
+        rvc.SwitchToScene(sceneId);
     }
 
+    public static void ShowMainView () {
+        rvc.SwitchToMain();
+    }
+    #endregion
+
+    #region private
+    private void SwitchToScene (int sceneId) {
+        svc.sceneId = sceneId;
+        mainView.SetActive(false);
+        sceneView.SetActive(true);
+    }
+
+    private void SwitchToMain () {
+        mainView.SetActive(true);
+        sceneView.SetActive(false);
+    }
     #endregion
 
 }
