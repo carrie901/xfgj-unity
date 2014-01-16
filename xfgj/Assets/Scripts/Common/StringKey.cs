@@ -18,5 +18,8 @@ public class StringKey {
     public const string ContactUs = "ContactUs";
     public const string CopyRight = "CopyRight";
 
+    public const string Msg_LoadSceneFail = "Msg_LoadSceneFail";
+    public const string Msg_ClearCacheSuccess = "Msg_ClearCacheSuccess";
+
 }
 

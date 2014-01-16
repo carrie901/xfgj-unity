@@ -45,6 +45,7 @@ public class SettingViewController : MonoBehaviour {
         if (Caching.CleanCache()) {
             cacheSpace.GetComponent<UILabel>().text = GetCacheSpace();
         }
+        NotificationViewController.ShowNotification(Localization.Localize(StringKey.Msg_ClearCacheSuccess));
     }
 
     private string GetCacheSpace () {

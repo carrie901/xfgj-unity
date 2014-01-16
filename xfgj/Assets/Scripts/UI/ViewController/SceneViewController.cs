@@ -92,7 +92,7 @@ public class SceneViewController : MonoBehaviour {
             }
         }
         else if (progress == -1.0f) {
-            //TODO
+            NotificationViewController.ShowNotification(Localization.Localize(StringKey.Msg_LoadSceneFail));
         }
         else {
             LoadViewController.NotifyProgress(progress);
