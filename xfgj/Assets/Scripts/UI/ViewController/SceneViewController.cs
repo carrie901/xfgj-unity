@@ -76,26 +76,29 @@ public class SceneViewController : MonoBehaviour {
     private void NotifyProgress (float progress) {
         Debug.Log("Loading progress is " + progress);
         if (progress == 1.0f) {
-            LoadViewController.HideLoadProgress();
-            GameObject roamCamera = GameObject.FindGameObjectWithTag(Config.TAG_ROAM_CAMERA);
-            if (roamCamera != null) {
-                CameraRoamController cc = roamCamera.GetComponent<CameraRoamController>();
-                cc.Roam();
-            }
-            GameObject gesture = GameObject.FindGameObjectWithTag(Config.TAG_GESTURE);
-            if (gesture != null) {
-                TapGestureHandle comp = gesture.GetComponent<TapGestureHandle>();
-                if (comp != null) {
-                    comp.SelectCallback = SelectObject;
-                    Debug.Log("set SelectCallback");
-                }
-            }
+            LoadViewController.HideLoadProgress(OnFinishLoad);
         }
         else if (progress == -1.0f) {
             NotificationViewController.ShowNotification(Localization.Localize(StringKey.Msg_LoadSceneFail));
         }
         else {
             LoadViewController.NotifyProgress(progress);
+        }
+    }
+
+    private void OnFinishLoad () {
+        GameObject roamCamera = GameObject.FindGameObjectWithTag(Config.TAG_ROAM_CAMERA);
+        if (roamCamera != null) {
+            CameraRoamController cc = roamCamera.GetComponent<CameraRoamController>();
+            cc.Roam();
+        }
+        GameObject gesture = GameObject.FindGameObjectWithTag(Config.TAG_GESTURE);
+        if (gesture != null) {
+            TapGestureHandle comp = gesture.GetComponent<TapGestureHandle>();
+            if (comp != null) {
+                comp.SelectCallback = SelectObject;
+                Debug.Log("set SelectCallback");
+            }
         }
     }
 

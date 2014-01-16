@@ -1,6 +1,8 @@
 using UnityEngine;
 using System.Collections;
 
+public delegate void AfterHideProgressView ();
+
 public class LoadViewController : MonoBehaviour {
 
     private static readonly int SHOW_DEPTH = 5;
@@ -16,6 +18,8 @@ public class LoadViewController : MonoBehaviour {
     private UISlider progressSlider;
     private UILabel tipLabel;
 
+    private string[] tips;
+
     #region MonoBehaviour
     void Awake () {
         lvc = this;
@@ -23,6 +27,11 @@ public class LoadViewController : MonoBehaviour {
         progressPanel = progressView.GetComponent<UIPanel>();
         progressSlider = progressView.transform.Find("Progress Bar").gameObject.GetComponent<UISlider>();
         tipLabel = progressView.transform.Find("Tip").gameObject.GetComponent<UILabel>();
+
+        tips = new string[3];
+        for (int i = 1; i <= tips.Length; ++i) {
+            tips[i - 1] = "Tip_" + i;
+        }
     }
 
     void Start () {
@@ -43,8 +52,8 @@ public class LoadViewController : MonoBehaviour {
         lvc.ShowProgressView();
     }
 
-    public static void HideLoadProgress () {
-        lvc.HideProgressView();
+    public static void HideLoadProgress (AfterHideProgressView callback) {
+        lvc.StartCoroutine(lvc.HideProgressView(callback));
     }
 
     public static void NotifyProgress (float progress) {
@@ -59,7 +68,7 @@ public class LoadViewController : MonoBehaviour {
     }
 
     private IEnumerator HideIndicatorView () {
-        yield return new WaitForSeconds(2);
+        yield return new WaitForSeconds(1);
         indicatorPanel.depth = HIDE_DEPTH;
         indicatorView.SetActive(false);
     }
@@ -67,11 +76,16 @@ public class LoadViewController : MonoBehaviour {
     private void ShowProgressView () {
         progressView.SetActive(true);
         progressPanel.depth = SHOW_DEPTH;
+        tipLabel.text = Localization.Localize(tips[Random.Range(0, tips.Length)]);
     }
 
-    private void HideProgressView () {
+    private IEnumerator HideProgressView (AfterHideProgressView callback) {
+        yield return new WaitForSeconds(2);
         progressPanel.depth = HIDE_DEPTH;
         progressView.SetActive(false);
+        if (callback != null) {
+            callback();
+        }
     }
 
     private void UpdateProgress (float progress) {
