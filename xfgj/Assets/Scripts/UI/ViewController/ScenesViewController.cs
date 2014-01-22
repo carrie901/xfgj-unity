@@ -9,7 +9,6 @@ public class ScenesViewController : MonoBehaviour {
 
     private const int ITEM_COUNT = 8;
 
-    public GameObject root;
     public GameObject scrollPanel;
     public GameObject table;
 

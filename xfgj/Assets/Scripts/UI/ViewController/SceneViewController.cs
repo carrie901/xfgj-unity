@@ -97,7 +97,6 @@ public class SceneViewController : MonoBehaviour {
     }
 
     private void OnFinishLoad () {
-        NGUI309.Adjust();
         GameObject roamCamera = GameObject.FindGameObjectWithTag(Config.TAG_ROAM_CAMERA);
         if (roamCamera != null) {
             CameraRoamController cc = roamCamera.GetComponent<CameraRoamController>();
