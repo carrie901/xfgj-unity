@@ -1,10 +1,15 @@
 using UnityEngine;
 using System;
 
+public delegate void RoamDelegate();
+
 public class CameraRoamController : MonoBehaviour {
 
     public Transform lookTarget;
     public Transform[] cameraPath;
+
+    public RoamDelegate roamStart;
+    public RoamDelegate roamComplete;
 
     private int curIndex;
     private bool animating;
@@ -101,11 +106,16 @@ public class CameraRoamController : MonoBehaviour {
     }
 
     private void RoamStart () {
+        if (roamStart != null) {
+            roamStart();
+        }
     }
 
     private void RoamComplete () {
-        gameObject.camera.depth = -1;
-        Camera.main.depth = 1;
+        if (roamComplete != null) {
+            roamComplete();
+        }
+        CameraSwitcher.SwitchToMain();
     }
     #endregion
 }

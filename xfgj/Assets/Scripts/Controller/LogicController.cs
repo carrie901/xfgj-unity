@@ -245,10 +245,10 @@ public class LogicController {
         dbAccess.OpenDB(Config.DB_PATH);
         string[] cols = new string[] {Product.FIELD_PRODUCT_ID, Product.FIELD_PRODUCER_ID,
                                       Product.FIELD_NAME, Product.FIELD_CID, Product.FIELD_DETAILS,
-                                      Product.FIELD_PICTURE_ID, Product.FIELD_SIZE,
+                                      Product.FIELD_PICTURE_ID, Product.FIELD_SIZE, Product.FIELD_ASSET_ID,
                                       Product.FIELD_MODIFIED};
         object[] values = new object[] {product.productId, product.producerId, product.name, product.cid,
-                                        product.details, product.pictureId, product.size,
+                                        product.details, product.pictureId, product.size, product.assetId,
                                         StringUtil.DateTimeToString(product.modified)};
         dbAccess.Insert(Product.TABLE_NAME, cols, values);
         dbAccess.CloseSqlConnection();
@@ -262,9 +262,9 @@ public class LogicController {
         dbAccess.OpenDB(Config.DB_PATH);
         string[] cols = new string[] {Product.FIELD_PRODUCER_ID, Product.FIELD_NAME,
                                       Product.FIELD_CID, Product.FIELD_DETAILS, Product.FIELD_PICTURE_ID,
-                                      Product.FIELD_SIZE, Product.FIELD_MODIFIED};
+                                      Product.FIELD_SIZE, Product.FIELD_ASSET_ID, Product.FIELD_MODIFIED};
         object[] values = new object[] {product.producerId, product.name, product.cid,
-                                        product.details, product.pictureId, product.size,
+                                        product.details, product.pictureId, product.size, product.assetId,
                                         StringUtil.DateTimeToString(product.modified)};
         string whereArgs = "WHERE " + Product.FIELD_PRODUCT_ID + "=" + product.productId;
         dbAccess.Update(Product.TABLE_NAME, cols, values, whereArgs);
@@ -279,7 +279,7 @@ public class LogicController {
         dbAccess.OpenDB(Config.DB_PATH);
         string[] cols = new string[] {Product.FIELD_PRODUCT_ID, Product.FIELD_PRODUCER_ID,
                                       Product.FIELD_NAME, Product.FIELD_CID, Product.FIELD_DETAILS,
-                                      Product.FIELD_PICTURE_ID, Product.FIELD_SIZE,
+                                      Product.FIELD_PICTURE_ID, Product.FIELD_SIZE, Product.FIELD_ASSET_ID,
                                       Product.FIELD_MODIFIED};
         object[,] values = new object[list.Count, cols.Length];
         for (int i = 0; i < list.Count; ++i) {
@@ -290,7 +290,8 @@ public class LogicController {
             values[i, 4] = list[i].details;
             values[i, 5] = list[i].pictureId;
             values[i, 6] = list[i].size;
-            values[i, 7] = StringUtil.DateTimeToString(list[i].modified);
+            values[i, 7] = list[i].assetId;
+            values[i, 8] = StringUtil.DateTimeToString(list[i].modified);
         }
         dbAccess.ReplaceInBatch(Product.TABLE_NAME, cols, values);
         dbAccess.CloseSqlConnection();
@@ -342,6 +343,7 @@ public class LogicController {
                             reader.GetString(reader.GetOrdinal(Product.FIELD_SIZE)),
                             reader.GetString(reader.GetOrdinal(Product.FIELD_PICTURE_ID)),
                             reader.GetString(reader.GetOrdinal(Product.FIELD_DETAILS)),
+                            reader.GetInt32(reader.GetOrdinal(Product.FIELD_ASSET_ID)),
                             StringUtil.StringToDateTime(reader.GetString(reader.GetOrdinal(Product.FIELD_MODIFIED))));
         }
         reader.Close();

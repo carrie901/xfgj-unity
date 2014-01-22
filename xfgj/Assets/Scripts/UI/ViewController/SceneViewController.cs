@@ -3,21 +3,29 @@ using System;
 
 public class SceneViewController : MonoBehaviour {
 
-    public GameObject root;
-    public GameObject productPanel;
+    private static readonly string PREFIX_PRODUCT = "p_";
+
+    public GameObject productView;
+    public GameObject backButton;
+    public GameObject title;
+    public GameObject contextButtons;
+    public GameObject cover;
+
     public int sceneId;
 
-    public GameObject leftBtn;
-    public GameObject rightBtn;
-
+    private ProductViewController pvc;
+    private ContextButtonController cbc;
     private Scene scene;
-
     private AsyncOperation oper;
+    private long ticks;
 
     #region MonoBehaviour
     void Awake () {
-        UIEventListener.Get(leftBtn).onClick = TurnLeft;
-        UIEventListener.Get(rightBtn).onClick = TurnRight;
+        pvc = productView.GetComponent<ProductViewController>();
+        cbc = contextButtons.GetComponent<ContextButtonController>();
+        UIEventListener.Get(backButton).onClick = BackToHome;
+        pvc.hideDelegate = CloseProductView;
+        cbc.productDelegate = ProductButtonClick;
     }
 
     void Start () {
@@ -40,6 +48,7 @@ public class SceneViewController : MonoBehaviour {
         }
         scene = LogicController.GetScene(sceneId);
         if (scene != null) {
+            title.GetComponent<UILabel>().text = scene.name;
             /*Asset asset = LogicController.GetAsset(scene.assetId);
             if (asset != null) {
                 LoadScene(asset);
@@ -56,11 +65,12 @@ public class SceneViewController : MonoBehaviour {
 
     void OnDisable () {
         sceneId = 0;
+        scene = null;
     }
 
     #endregion
 
-    #region delegate
+    #region private
     private void GetAsset (object obj) {
         if (obj != null) {
             Asset asset = obj as Asset;
@@ -87,9 +97,12 @@ public class SceneViewController : MonoBehaviour {
     }
 
     private void OnFinishLoad () {
+        NGUI309.Adjust();
         GameObject roamCamera = GameObject.FindGameObjectWithTag(Config.TAG_ROAM_CAMERA);
         if (roamCamera != null) {
             CameraRoamController cc = roamCamera.GetComponent<CameraRoamController>();
+            cc.roamStart = OnRoamStart;
+            cc.roamComplete = OnRoamComplete;
             cc.Roam();
         }
         GameObject gesture = GameObject.FindGameObjectWithTag(Config.TAG_GESTURE);
@@ -97,12 +110,12 @@ public class SceneViewController : MonoBehaviour {
             TapGestureHandle comp = gesture.GetComponent<TapGestureHandle>();
             if (comp != null) {
                 comp.SelectCallback = SelectObject;
-                Debug.Log("set SelectCallback");
+                comp.TapInterceptDelegate = IsTapIntercepted;
             }
         }
     }
 
-    private void BackToHome () {
+    private void BackToHome (GameObject obj) {
         GameObject[] arrays = GameObject.FindGameObjectsWithTag(Config.TAG_SCENE);
         foreach (GameObject go in arrays) {
             Destroy(go);
@@ -118,16 +131,64 @@ public class SceneViewController : MonoBehaviour {
         RootViewController.ShowMainView();
     }
 
-    private void TurnLeft (GameObject go) {
-        BackToHome();
-    }
-
-    private void TurnRight (GameObject go) {
-    }
-
     private void SelectObject (GameObject go) {
         Debug.Log("SceneViewController SelectObject " + go.name);
-        productPanel.SetActive(true);
+        if (go.name.StartsWith(PREFIX_PRODUCT)) {
+            cbc.ShowContextButton(ContextButtonController.FLAG_PRODUCT);
+            pvc.productId = int.Parse(go.name.Substring(PREFIX_PRODUCT.Length));
+        }
+    }
+
+    private void ProductButtonClick () {
+        Debug.Log("ProductButtonClick");
+        ticks = DateTime.Now.Ticks;
+        productView.SetActive(true);
+        SwitchFingerGesture(false);
+    }
+
+    private void CloseProductView () {
+        SwitchFingerGesture(true);
+    }
+
+    private void SwitchFingerGesture (bool sw) {
+        GameObject gesture = GameObject.FindGameObjectWithTag(Config.TAG_GESTURE);
+        if (gesture != null) {
+            TapRecognizer tr = gesture.GetComponent<TapRecognizer>();
+            if (tr != null) {
+                tr.UseSendMessage = sw;
+            }
+        }
+        GameObject mainCamera = GameObject.FindGameObjectWithTag(Config.TAG_MAIN_CAMERA);
+        if (mainCamera != null) {
+            CustomTBOrbit ct = mainCamera.GetComponent<CustomTBOrbit>();
+            if (ct != null) {
+                ct.enabled = sw;
+            }
+            DragRecognizer dr = mainCamera.GetComponent<DragRecognizer>();
+            if (dr != null) {
+                dr.UseSendMessage = sw;
+            }
+            PinchRecognizer pr = mainCamera.GetComponent<PinchRecognizer>();
+            if (pr != null) {
+                pr.UseSendMessage = sw;
+            }
+        }
+    }
+
+    private bool IsTapIntercepted () {
+        // 1 ms == 10000 ticks
+        if (ticks == 0) {
+            return false;
+        }
+        return (DateTime.Now.Ticks - ticks) / 10000 < 1000;
+    }
+
+    private void OnRoamStart () {
+        cover.SetActive(true);
+    }
+
+    private void OnRoamComplete () {
+        cover.SetActive(false);
     }
     #endregion
 

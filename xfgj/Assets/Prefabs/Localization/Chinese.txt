@@ -1,0 +1,22 @@
+ShowRoom = 样板间
+Setting = 设置
+Favourite = 收藏
+FitmentLesson = 装修课堂
+LookForDiscount = 找优惠
+
+CurrentVersion = 当前版本
+CheckUpdate = 检查软件更新
+ClearCache = 清理缓存
+DownloadCondition = 仅在连接WIFI时下载资源
+CacheSpace = 缓存已占用容量
+On = 开启
+Off = 关闭
+ContactUs = 如果您在装修上有任何问题，请关注我们的微博与微信，我们愿意为您解答
+CopyRight = CopyRight©wanzhuangxiu.com All Right Reserverd
+
+Msg_LoadSceneFail = 加载场景失败. 可能是由于网络没有连接
+Msg_ClearCacheSuccess = 完成缓存的清理
+
+Tip_1 = 小技巧：XXX
+Tip_2 = 小技巧：XXX
+Tip_3 = 小技巧：XXX

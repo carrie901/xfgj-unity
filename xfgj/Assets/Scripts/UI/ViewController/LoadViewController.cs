@@ -64,24 +64,24 @@ public class LoadViewController : MonoBehaviour {
     #region private
     private void ShowIndicatorView () {
         indicatorView.SetActive(true);
-        indicatorPanel.depth = SHOW_DEPTH;
+        //indicatorPanel.depth = SHOW_DEPTH;
     }
 
     private IEnumerator HideIndicatorView () {
         yield return new WaitForSeconds(1);
-        indicatorPanel.depth = HIDE_DEPTH;
+        //indicatorPanel.depth = HIDE_DEPTH;
         indicatorView.SetActive(false);
     }
 
     private void ShowProgressView () {
         progressView.SetActive(true);
-        progressPanel.depth = SHOW_DEPTH;
+        //progressPanel.depth = SHOW_DEPTH;
         tipLabel.text = Localization.Localize(tips[Random.Range(0, tips.Length)]);
     }
 
     private IEnumerator HideProgressView (AfterHideProgressView callback) {
-        yield return new WaitForSeconds(2);
-        progressPanel.depth = HIDE_DEPTH;
+        yield return new WaitForSeconds(1);
+        //progressPanel.depth = HIDE_DEPTH;
         progressView.SetActive(false);
         if (callback != null) {
             callback();

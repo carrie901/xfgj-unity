@@ -9,6 +9,7 @@ public class Product {
     public string size;
     public string pictureId;
     public string details;
+    public int assetId;
     public DateTime modified;
 
     public static readonly string TABLE_NAME = "product";
@@ -19,6 +20,7 @@ public class Product {
     public static readonly string FIELD_SIZE = "size";
     public static readonly string FIELD_PICTURE_ID = "picture_id";
     public static readonly string FIELD_DETAILS = "details";
+    public static readonly string FIELD_ASSET_ID = "asset_id";
     public static readonly string FIELD_MODIFIED = "modified";
     public static readonly string CREATE_SQL = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "("
                                                + FIELD_PRODUCT_ID + " INTEGER PRIMARY KEY,"
@@ -28,10 +30,11 @@ public class Product {
                                                + FIELD_SIZE + " TEXT,"
                                                + FIELD_PICTURE_ID + " TEXT,"
                                                + FIELD_DETAILS + " TEXT,"
+                                               + FIELD_ASSET_ID + " INTEGER,"
                                                + FIELD_MODIFIED + " TEXT)";
 
-    public Product (int productId, int producerId, string name, int cid,
-                    string size, string pictureId, string details, DateTime modified) {
+    public Product (int productId, int producerId, string name, int cid, string size,
+                    string pictureId, string details, int assetId, DateTime modified) {
         this.productId = productId;
         this.producerId = producerId;
         this.name = name;
@@ -39,6 +42,7 @@ public class Product {
         this.size = size;
         this.pictureId = pictureId;
         this.details = details;
+        this.assetId = assetId;
         this.modified = modified;
     }
 

@@ -10,13 +10,11 @@ public class NotificationViewController : MonoBehaviour {
 
     public GameObject notificationView;
 
-    private UIPanel panel;
     private UILabel label;
 
     #region MonoBehaviour
     void Awake () {
         nvc = this;
-        panel = notificationView.GetComponent<UIPanel>();
         label = notificationView.transform.Find("Label").gameObject.GetComponent<UILabel>();
     }
 
@@ -34,9 +32,7 @@ public class NotificationViewController : MonoBehaviour {
     #region private
     private void Show (string message) {
         notificationView.SetActive(true);
-        panel.depth = SHOW_DEPTH;
         label.text = message;
-        panel.alpha = 0.0f;
         TweenAlpha ta = UITweener.Begin<TweenAlpha>(notificationView, 1.0f);
         ta.from = 0.0f;
         ta.to = 1.0f;
@@ -59,7 +55,6 @@ public class NotificationViewController : MonoBehaviour {
 
     private void OnCompleteDisappear () {
         Debug.Log("Notification OnCompleteDisappear");
-        panel.depth = HIDE_DEPTH;
         notificationView.SetActive(false);
     }
     #endregion

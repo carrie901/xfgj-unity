@@ -134,6 +134,7 @@ public class ApiTest : UUnitTestCase
                                       (string)(jd[Param.SIZE]),
                                       (string)(jd[Param.PIC_URL]),
                                       (string)(jd[Param.DETAILS]),
+                                      (int)jd[Param.ASSET_ID],
                                       StringUtil.StringToDateTime((string)(jd[Param.MODIFIED])));
         UUnitAssert.NotNull(product);
     }
@@ -180,6 +181,7 @@ public class ApiTest : UUnitTestCase
                                       (string)(jd[0][Param.SIZE]),
                                       (string)(jd[0][Param.PIC_URL]),
                                       (string)(jd[0][Param.DETAILS]),
+                                      (int)jd[Param.ASSET_ID],
                                       StringUtil.StringToDateTime((string)(jd[0][Param.MODIFIED])));
             UUnitAssert.NotNull(product);
         }

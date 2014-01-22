@@ -14,7 +14,7 @@ public class ProductSerializer
         JsonData jd = JsonMapper.ToObject(str);
         return new Product((int)jd[Param.PRODUCT_ID], (int)jd[Param.PRODUCER_ID],
             (string)jd[Param.NAME], (int)jd[Param.CID], (string)jd[Param.SIZE],
-            (string)jd[Param.PICTURE_ID], (string)jd[Param.DETAILS],
+            (string)jd[Param.PICTURE_ID], (string)jd[Param.DETAILS], (int)jd[Param.ASSET_ID],
             StringUtil.StringToDateTime((string)jd[Param.MODIFIED]));
     }
 
@@ -46,7 +46,7 @@ public class ProductSerializer
         isDeleted = STATUS_DELETED.Equals((string)jd[Param.STATUS]);
         product = new Product((int)jd[Param.PRODUCT_ID], (int)jd[Param.PRODUCER_ID],
             (string)jd[Param.NAME], (int)jd[Param.CID], (string)jd[Param.SIZE],
-            (string)jd[Param.PICTURE_ID], (string)jd[Param.DETAILS],
+            (string)jd[Param.PICTURE_ID], (string)jd[Param.DETAILS], (int)jd[Param.ASSET_ID],
             StringUtil.StringToDateTime((string)jd[Param.MODIFIED]));
     }
 

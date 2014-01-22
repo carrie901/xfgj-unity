@@ -10,6 +10,13 @@ public class TapGestureHandle : MonoBehaviour {
         }
     }
 
+    private TapIntercept tapIntercept;
+    public TapIntercept TapInterceptDelegate {
+        set {
+            tapIntercept = value;
+        }
+    }
+
     #region MonoBehaviour
     void Start () {
     
@@ -22,6 +29,9 @@ public class TapGestureHandle : MonoBehaviour {
 
     #region FingerGesture
     void OnTap (TapGesture gesture) {
+        if (tapIntercept()) {
+            return;
+        }
         if (gesture.Selection != null) {
             if (selectObject != null) {
                 selectObject(gesture.Selection);
