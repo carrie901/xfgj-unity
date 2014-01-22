@@ -619,7 +619,9 @@ public class UIPanel : UIRect
 	public bool IsVisible (Vector3 worldPos)
 	{
 		if (mAlpha < 0.001f) return false;
-		if (mClipping == UIDrawCall.Clipping.None) return true;
+		if (mClipping == UIDrawCall.Clipping.None ||
+			mClipping == UIDrawCall.Clipping.ConstrainButDontClip) return true;
+
 		UpdateTransformMatrix();
 
 		Vector3 pos = worldToLocal.MultiplyPoint3x4(worldPos);
@@ -1194,6 +1196,8 @@ public class UIPanel : UIRect
 		}
 	}
 
+	bool mForced = false;
+
 	/// <summary>
 	/// Update all of the widgets belonging to this panel.
 	/// </summary>
@@ -1206,6 +1210,12 @@ public class UIPanel : UIRect
 		bool forceVisible = cullWhileDragging ? false : (mCullTime > mUpdateTime);
 #endif
 		bool changed = false;
+
+		if (mForced != forceVisible)
+		{
+			mForced = forceVisible;
+			mResized = true;
+		}
 
 		// Update all widgets
 		for (int i = 0, imax = widgets.size; i < imax; ++i)
@@ -1257,7 +1267,8 @@ public class UIPanel : UIRect
 				{
 					// Only proceed to checking the widget's visibility if it actually moved
 					bool vis = forceVisible || (w.CalculateCumulativeAlpha(frame) > 0.001f &&
-						((mClipping == UIDrawCall.Clipping.None && !w.hideIfOffScreen) || IsVisible(w)));
+						(((mClipping == UIDrawCall.Clipping.None || mClipping == UIDrawCall.Clipping.ConstrainButDontClip) &&
+						!w.hideIfOffScreen) || IsVisible(w)));
 					w.UpdateVisibility(vis);
 				}
 				

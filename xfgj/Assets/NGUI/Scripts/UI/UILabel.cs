@@ -889,48 +889,51 @@ public class UILabel : UIWidget
 	{
 		base.OnValidate();
 
-		UIFont fnt = mFont;
-		Font ttf = mTrueTypeFont;
+		if (NGUITools.GetActive(this))
+		{
+			UIFont fnt = mFont;
+			Font ttf = mTrueTypeFont;
 
-		mFont = null;
-		mTrueTypeFont = null;
-		mAllowProcessing = false;
+			mFont = null;
+			mTrueTypeFont = null;
+			mAllowProcessing = false;
 
 #if DYNAMIC_FONT
-		SetActiveFont(null);
+			SetActiveFont(null);
 #endif
-		if (ttf != null && (fnt == null || !mUseDynamicFont))
-		{
-			bitmapFont = null;
-			trueTypeFont = ttf;
-			mUseDynamicFont = true;
-		}
-		else if (fnt != null)
-		{
-			// Auto-upgrade from 3.0.2 and earlier
-			if (fnt.isDynamic)
+			if (ttf != null && (fnt == null || !mUseDynamicFont))
 			{
-				trueTypeFont = fnt.dynamicFont;
-				mFontStyle = fnt.dynamicFontStyle;
+				bitmapFont = null;
+				trueTypeFont = ttf;
 				mUseDynamicFont = true;
+			}
+			else if (fnt != null)
+			{
+				// Auto-upgrade from 3.0.2 and earlier
+				if (fnt.isDynamic)
+				{
+					trueTypeFont = fnt.dynamicFont;
+					mFontStyle = fnt.dynamicFontStyle;
+					mUseDynamicFont = true;
+				}
+				else
+				{
+					bitmapFont = fnt;
+					mUseDynamicFont = false;
+				}
+				mFontSize = fnt.defaultSize;
 			}
 			else
 			{
-				bitmapFont = fnt;
-				mUseDynamicFont = false;
+				trueTypeFont = ttf;
+				mUseDynamicFont = true;
 			}
-			mFontSize = fnt.defaultSize;
-		}
-		else
-		{
-			trueTypeFont = ttf;
-			mUseDynamicFont = true;
-		}
 
-		shouldBeProcessed = true;
-		mAllowProcessing = true;
-		ProcessAndRequest();
-		if (autoResizeBoxCollider) ResizeCollider();
+			shouldBeProcessed = true;
+			mAllowProcessing = true;
+			ProcessAndRequest();
+			if (autoResizeBoxCollider) ResizeCollider();
+		}
 	}
 #endif
 
@@ -1033,7 +1036,7 @@ public class UILabel : UIWidget
 				NGUIText.Update(false);
 
 				// Wrap the text
-				bool fits = NGUIText.WrapText(mText, out mProcessedText);
+				bool fits = NGUIText.WrapText(mText, out mProcessedText, true);
 
 				if (mOverflow == Overflow.ShrinkContent && !fits)
 				{
@@ -1043,6 +1046,7 @@ public class UILabel : UIWidget
 				else if (mOverflow == Overflow.ResizeFreely)
 				{
 					mCalculatedSize = NGUIText.CalculatePrintedSize(mProcessedText);
+
 					mWidth = Mathf.Max(minWidth, Mathf.RoundToInt(mCalculatedSize.x));
 					mHeight = Mathf.Max(minHeight, Mathf.RoundToInt(mCalculatedSize.y));
 
@@ -1172,7 +1176,7 @@ public class UILabel : UIWidget
 			UpdateNGUIText(fontSize, mWidth, mHeight);
 
 			NGUIText.PrintCharacterPositions(text, mTempVerts, mTempIndices);
-			
+
 			if (mTempVerts.size > 0)
 			{
 				ApplyOffset(mTempVerts, 0);
