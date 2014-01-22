@@ -1,6 +1,6 @@
 //----------------------------------------------
 //            NGUI: Next-Gen UI kit
-// Copyright © 2011-2013 Tasharen Entertainment
+// Copyright © 2011-2014 Tasharen Entertainment
 //----------------------------------------------
 
 #if !UNITY_3_5 && !UNITY_4_0 && !UNITY_4_1 && !UNITY_4_2
@@ -25,7 +25,7 @@ public class UI2DSpriteEditor : UIWidgetInspector
 		mSprite = target as UI2DSprite;
 	}
 
-	protected override bool DrawProperties ()
+	protected override bool ShouldDrawProperties ()
 	{
 		SerializedProperty sp = NGUIEditorTools.DrawProperty("2D Sprite", serializedObject, "mSprite");
 

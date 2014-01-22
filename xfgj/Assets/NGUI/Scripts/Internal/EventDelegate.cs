@@ -1,6 +1,6 @@
 //----------------------------------------------
 //            NGUI: Next-Gen UI kit
-// Copyright © 2011-2013 Tasharen Entertainment
+// Copyright © 2011-2014 Tasharen Entertainment
 //----------------------------------------------
 
 #if UNITY_EDITOR || (!UNITY_FLASH && !NETFX_CORE)
@@ -115,7 +115,8 @@ public class EventDelegate
 			Callback callback = obj as Callback;
 #if REFLECTION_SUPPORT
 			if (callback.Equals(mCachedCallback)) return true;
-			return (mTarget == callback.Target && string.Equals(mMethodName, GetMethodName(callback)));
+			MonoBehaviour mb = callback.Target as MonoBehaviour;
+			return (mTarget == mb && string.Equals(mMethodName, GetMethodName(callback)));
 #elif UNITY_FLASH
 			return (callback == mCachedCallback);
 #else
@@ -146,7 +147,7 @@ public class EventDelegate
 	Callback Get ()
 	{
 #if REFLECTION_SUPPORT
-		if (!mRawDelegate && (mCachedCallback == null || mCachedCallback.Target != mTarget || GetMethodName(mCachedCallback) != mMethodName))
+		if (!mRawDelegate && (mCachedCallback == null || (mCachedCallback.Target as MonoBehaviour) != mTarget || GetMethodName(mCachedCallback) != mMethodName))
 		{
 			if (mTarget != null && !string.IsNullOrEmpty(mMethodName))
 			{
@@ -215,25 +216,33 @@ public class EventDelegate
 
 	public bool Execute ()
 	{
-#if UNITY_EDITOR
-		if (Application.isPlaying)
-#endif
-		{
-			Callback call = Get();
+		Callback call = Get();
 
-			if (call != null)
+		if (call != null)
+		{
+#if UNITY_EDITOR
+			if (Application.isPlaying)
 			{
 				call();
-				return true;
 			}
-#if !REFLECTION_SUPPORT
-			if (isValid)
+			else if (call.Target != null)
 			{
-				mTarget.SendMessage(mMethodName, SendMessageOptions.DontRequireReceiver);
-				return true;
+				System.Type type = call.Target.GetType();
+				object[] objs = type.GetCustomAttributes(typeof(ExecuteInEditMode), true);
+				if (objs != null && objs.Length > 0) call();
 			}
+#else
+			call();
 #endif
+			return true;
 		}
+#if !REFLECTION_SUPPORT
+		if (isValid)
+		{
+			mTarget.SendMessage(mMethodName, SendMessageOptions.DontRequireReceiver);
+			return true;
+		}
+#endif
 		return false;
 	}
 

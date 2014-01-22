@@ -1,11 +1,12 @@
 //----------------------------------------------
 //            NGUI: Next-Gen UI kit
-// Copyright © 2011-2013 Tasharen Entertainment
+// Copyright © 2011-2014 Tasharen Entertainment
 //----------------------------------------------
 
 using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
+using System.IO;
 
 /// <summary>
 /// Inspector class used to edit the UIAtlas.
@@ -246,6 +247,24 @@ public class UIAtlasInspector : Editor
 						sprite.borderTop = borderB.y;
 
 						MarkSpriteAsDirty();
+					}
+
+					if (sprite != null && GUILayout.Button("Extract Sprite"))
+					{
+						string path = EditorUtility.SaveFilePanelInProject("Save As", sprite.name + ".png", "png", "Extract sprite into which file?");
+
+						if (!string.IsNullOrEmpty(path))
+						{
+							UIAtlasMaker.SpriteEntry se = UIAtlasMaker.ExtractSprite(mAtlas, sprite.name);
+							
+							if (se != null)
+							{
+								byte[] bytes = se.tex.EncodeToPNG();
+								File.WriteAllBytes(path, bytes);
+								AssetDatabase.ImportAsset(path);
+							}
+							if (se.temporaryTexture) DestroyImmediate(se.tex);
+						}
 					}
 					NGUIEditorTools.EndContents();
 				}

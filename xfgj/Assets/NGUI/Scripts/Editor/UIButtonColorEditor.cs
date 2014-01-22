@@ -1,6 +1,6 @@
 //----------------------------------------------
 //            NGUI: Next-Gen UI kit
-// Copyright © 2011-2013 Tasharen Entertainment
+// Copyright © 2011-2014 Tasharen Entertainment
 //----------------------------------------------
 
 using UnityEngine;
@@ -62,6 +62,12 @@ public class UIButtonColorEditor : UIWidgetContainerEditor
 			button.pressed = pressed;
 			button.duration = duration;
 			UnityEditor.EditorUtility.SetDirty(button);
+		}
+
+		if (GUILayout.Button("Upgrade to a Button"))
+		{
+			NGUIEditorTools.ReplaceClass(serializedObject, typeof(UIButton));
+			Selection.activeGameObject = null;
 		}
 	}
 }

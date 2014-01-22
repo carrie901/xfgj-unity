@@ -1,6 +1,6 @@
 //----------------------------------------------
 //            NGUI: Next-Gen UI kit
-// Copyright © 2011-2013 Tasharen Entertainment
+// Copyright © 2011-2014 Tasharen Entertainment
 //----------------------------------------------
 
 using UnityEngine;
@@ -14,6 +14,8 @@ using System.Collections.Generic;
 [AddComponentMenu("NGUI/Interaction/Grid")]
 public class UIGrid : UIWidgetContainer
 {
+	public delegate void OnReposition ();
+
 	public enum Arrangement
 	{
 		Horizontal,
@@ -47,6 +49,12 @@ public class UIGrid : UIWidgetContainer
 	public float cellHeight = 200f;
 
 	/// <summary>
+	/// Whether the grid will smoothly animate its children into the correct place.
+	/// </summary>
+
+	public bool animateSmoothly = false;
+
+	/// <summary>
 	/// Whether the children will be sorted alphabetically prior to repositioning.
 	/// </summary>
 
@@ -59,18 +67,40 @@ public class UIGrid : UIWidgetContainer
 	public bool hideInactive = true;
 
 	/// <summary>
+	/// Whether the parent container will be notified of the grid's changes.
+	/// </summary>
+
+	public bool keepWithinPanel = false;
+
+	/// <summary>
+	/// Callback triggered when the grid repositions its contents.
+	/// </summary>
+
+	public OnReposition onReposition;
+
+	/// <summary>
 	/// Reposition the children on the next Update().
 	/// </summary>
 
 	public bool repositionNow { set { if (value) { mReposition = true; enabled = true; } } }
 
-	bool mStarted = false;
 	bool mReposition = false;
+	UIPanel mPanel;
+	bool mInitDone = false;
+
+	void Init ()
+	{
+		mInitDone = true;
+		mPanel = NGUITools.FindInParents<UIPanel>(gameObject);
+	}
 
 	void Start ()
 	{
-		mStarted = true;
+		if (!mInitDone) Init();
+		bool smooth = animateSmoothly;
+		animateSmoothly = false;
 		Reposition();
+		animateSmoothly = smooth;
 		enabled = false;
 	}
 
@@ -89,11 +119,13 @@ public class UIGrid : UIWidgetContainer
 	[ContextMenu("Execute")]
 	public void Reposition ()
 	{
-		if (Application.isPlaying && !mStarted)
+		if (Application.isPlaying && !mInitDone && NGUITools.GetActive(this))
 		{
 			mReposition = true;
 			return;
 		}
+
+		if (!mInitDone) Init();
 
 		mReposition = false;
 		Transform myTrans = transform;
@@ -119,9 +151,15 @@ public class UIGrid : UIWidgetContainer
 				if (!NGUITools.GetActive(t.gameObject) && hideInactive) continue;
 
 				float depth = t.localPosition.z;
-				t.localPosition = (arrangement == Arrangement.Horizontal) ?
+				Vector3 pos = (arrangement == Arrangement.Horizontal) ?
 					new Vector3(cellWidth * x, -cellHeight * y, depth) :
 					new Vector3(cellWidth * y, -cellHeight * x, depth);
+
+				if (animateSmoothly && Application.isPlaying)
+				{
+					SpringPosition.Begin(t.gameObject, pos, 15f);
+				}
+				else t.localPosition = pos;
 
 				if (++x >= maxPerLine && maxPerLine > 0)
 				{
@@ -139,9 +177,15 @@ public class UIGrid : UIWidgetContainer
 				if (!NGUITools.GetActive(t.gameObject) && hideInactive) continue;
 
 				float depth = t.localPosition.z;
-				t.localPosition = (arrangement == Arrangement.Horizontal) ?
+				Vector3 pos = (arrangement == Arrangement.Horizontal) ?
 					new Vector3(cellWidth * x, -cellHeight * y, depth) :
 					new Vector3(cellWidth * y, -cellHeight * x, depth);
+
+				if (animateSmoothly && Application.isPlaying)
+				{
+					SpringPosition.Begin(t.gameObject, pos, 15f);
+				}
+				else t.localPosition = pos;
 
 				if (++x >= maxPerLine && maxPerLine > 0)
 				{
@@ -151,7 +195,10 @@ public class UIGrid : UIWidgetContainer
 			}
 		}
 
-		UIScrollView drag = NGUITools.FindInParents<UIScrollView>(gameObject);
-		if (drag != null) drag.UpdateScrollbars(true);
+		if (keepWithinPanel && mPanel != null)
+			mPanel.ConstrainTargetToBounds(myTrans, true);
+
+		if (onReposition != null)
+			onReposition();
 	}
 }
