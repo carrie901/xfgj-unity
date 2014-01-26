@@ -3,8 +3,8 @@ using System.Collections;
 
 public class NotificationViewController : MonoBehaviour {
 
-    private static readonly int SHOW_DEPTH = 6;
-    private static readonly int HIDE_DEPTH = -1;
+    //private static readonly int SHOW_DEPTH = 6;
+    //private static readonly int HIDE_DEPTH = -1;
 
     private static NotificationViewController nvc;
 

@@ -20,6 +20,8 @@ public class StringKey {
 
     public const string Msg_LoadSceneFail = "Msg_LoadSceneFail";
     public const string Msg_ClearCacheSuccess = "Msg_ClearCacheSuccess";
+    public const string Msg_FindProductFail = "Msg_FindProductFail";
 
+    public const string ProductInfo = "ProductInfo";
 }
 

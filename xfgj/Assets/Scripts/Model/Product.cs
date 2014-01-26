@@ -8,6 +8,15 @@ public class Product {
     public int cid;
     public string size;
     public string pictureId;
+
+    /* details format
+     * [
+           {
+               "key" : "xxx",
+               "value" : "xxx"
+           }
+       ]
+     */
     public string details;
     public int assetId;
     public DateTime modified;

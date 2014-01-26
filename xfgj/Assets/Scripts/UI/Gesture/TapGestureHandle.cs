@@ -3,10 +3,10 @@ using System.Collections;
 
 public class TapGestureHandle : MonoBehaviour {
 
-    private SelectObjectDelegate selectObject;
+    private SelectObjectDelegate selectDelegate;
     public SelectObjectDelegate SelectCallback {
         set {
-            selectObject = value;
+            selectDelegate = value;
         }
     }
 
@@ -19,11 +19,6 @@ public class TapGestureHandle : MonoBehaviour {
 
     #region MonoBehaviour
     void Start () {
-    
-    }
-    
-    void Update () {
-    
     }
     #endregion
 
@@ -32,16 +27,8 @@ public class TapGestureHandle : MonoBehaviour {
         if (tapIntercept()) {
             return;
         }
-        if (gesture.Selection != null) {
-            if (selectObject != null) {
-                selectObject(gesture.Selection);
-            }
-            else {
-                Debug.Log("TapGesturehandle selectObject is null");
-            }
-        }
-        else {
-            Debug.Log("No object was tapped at " + gesture.Position);
+        if (selectDelegate != null) {
+            selectDelegate(gesture.Selection);
         }
     }
     #endregion

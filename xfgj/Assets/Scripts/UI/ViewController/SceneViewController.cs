@@ -131,10 +131,19 @@ public class SceneViewController : MonoBehaviour {
     }
 
     private void SelectObject (GameObject go) {
+        if (go == null) {
+            cbc.HideContextButton();
+            return;
+        }
         Debug.Log("SceneViewController SelectObject " + go.name);
         if (go.name.StartsWith(PREFIX_PRODUCT)) {
             cbc.ShowContextButton(ContextButtonController.FLAG_PRODUCT);
-            pvc.productId = int.Parse(go.name.Substring(PREFIX_PRODUCT.Length));
+            int productId = int.Parse(go.name.Substring(PREFIX_PRODUCT.Length));
+            //Product product = LogicController.GetProduct(productId);
+            Product product = LogicController.GetProduct(100001);
+            if (product != null) {
+                pvc.product = product;
+            }
         }
     }
 
@@ -146,6 +155,7 @@ public class SceneViewController : MonoBehaviour {
     }
 
     private void CloseProductView () {
+        ticks = DateTime.Now.Ticks;
         SwitchFingerGesture(true);
     }
 
@@ -184,10 +194,12 @@ public class SceneViewController : MonoBehaviour {
 
     private void OnRoamStart () {
         cover.SetActive(true);
+        SwitchFingerGesture(false);
     }
 
     private void OnRoamComplete () {
         cover.SetActive(false);
+        SwitchFingerGesture(true);
     }
     #endregion
 
