@@ -13,6 +13,12 @@ public class ProductViewController : MonoBehaviour {
     public GameObject infoContent;
     public GameObject scrollCamera;
     public GameObject cover;
+    public GameObject redButton;
+    
+    public GameObject sourceCamera;
+    public GameObject topLeft;
+    public GameObject bottomRight1;
+    public GameObject bottomRight2;
 
     public Product product;
     public ProductViewDelegate hideDelegate;
@@ -62,6 +68,7 @@ public class ProductViewController : MonoBehaviour {
         smc.afterMoveAway = AfterMoveAway;
         smc.afterMoveBack = AfterMoveBack;
 
+        ResizeViewport();
         tableComp.Reposition();
     }
 
@@ -115,6 +122,8 @@ public class ProductViewController : MonoBehaviour {
             GameObject row = NGUITools.AddChild(infoContent, labelPrefab);
             UILabel nameLabel = row.transform.Find("Name").gameObject.GetComponent<UILabel>();
             UILabel contentLabel = row.transform.Find("Content").gameObject.GetComponent<UILabel>();
+            nameLabel.text = array[i, 0];
+            contentLabel.text = array[i, 1];
             BoxCollider bc = row.GetComponent<BoxCollider>();
             UIDragCamera dc = row.GetComponent<UIDragCamera>();
             dc.draggableCamera = scrollCamera.GetComponent<UIDraggableCamera>();
@@ -127,10 +136,18 @@ public class ProductViewController : MonoBehaviour {
             }
             bc.center = new Vector3(0, -(contentLabel.height + lineSpace)/2, 0);
             bc.size = new Vector3(bc.size.x, contentLabel.height + lineSpace, 0);
-            nameLabel.text = array[i, 0];
-            contentLabel.text = array[i, 1];
             row.transform.localPosition = new Vector3(0, yOffset, 0);
             yOffset -= (int)rect.y + lineSpace;
+        }
+    }
+
+    private void ResizeViewport () {
+        SingleModelController smc = model.GetComponent<SingleModelController>();
+        UIViewport vp = smc.surroundCamera.GetComponent<UIViewport>();
+        if (vp != null) {
+            vp.sourceCamera = sourceCamera.GetComponent<Camera>();
+            vp.topLeft = topLeft.transform;
+            vp.bottomRight = bottomRight2.transform;
         }
     }
 
