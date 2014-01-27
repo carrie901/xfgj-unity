@@ -31,8 +31,15 @@ public class XfgjEditor {
         string scenePath = Application.dataPath + EditorApplication.currentScene.Substring("Assets".Length);
         string metaPath = scenePath.Substring(0, scenePath.Length - "unity".Length) + "txt";
         StreamWriter sw = new StreamWriter(metaPath, false);
-        GameObject[] gos = GameObject.FindObjectsOfType(typeof(GameObject)) as GameObject[];
+        GameObject[] gos = Resources.FindObjectsOfTypeAll(typeof(GameObject)) as GameObject[];
         foreach (GameObject go in gos) {
+            if (go.hideFlags == HideFlags.NotEditable || go.hideFlags == HideFlags.HideAndDontSave) {
+                continue;
+            }
+            string assetPath = AssetDatabase.GetAssetPath(go.transform.root.gameObject);
+            if (!string.IsNullOrEmpty(assetPath)) {
+                continue;
+            }
             TraverseGo(go, sw);
         }
         sw.Close();
@@ -48,11 +55,29 @@ public class XfgjEditor {
             Debug.Log("The scene " + StringUtil.GetFileName(scenePath) + " don't have meta file");
             return;
         }
+        List<GameObject> objectInScene = new List<GameObject>();
+        GameObject[] gos = Resources.FindObjectsOfTypeAll(typeof(GameObject)) as GameObject[];
+        foreach (GameObject go in gos) {
+            if (go.hideFlags == HideFlags.NotEditable || go.hideFlags == HideFlags.HideAndDontSave) {
+                continue;
+            }
+            string assetPath = AssetDatabase.GetAssetPath(go.transform.root.gameObject);
+            if (!string.IsNullOrEmpty(assetPath)) {
+                continue;
+            }
+            objectInScene.Add(go);
+        }
         StreamReader sr = new StreamReader(metaPath);
         string line;
         while ((line = sr.ReadLine()) != null) {
             JsonData jd = JsonMapper.ToObject(line);
-            GameObject go = GameObject.Find((string)jd["name"]);
+            GameObject go = null;
+            foreach (GameObject obj in objectInScene) {
+                if (GetFullName(obj).Equals((string)jd["name"])) {
+                    go = obj;
+                    break;
+                }
+            }
             if (go == null) {
                 continue;
             }
@@ -97,10 +122,6 @@ public class XfgjEditor {
         jw.WriteArrayEnd();
         jw.WriteObjectEnd();
         sw.WriteLine();
-        // Now recurse through each child GO (if there are any):
-        foreach (Transform childT in go.transform) {
-            TraverseGo(childT.gameObject, sw);
-        }
     }
 
     private static string GetFullName (GameObject go) {
