@@ -5,14 +5,17 @@ public delegate void RoamDelegate();
 
 public class CameraRoamController : MonoBehaviour {
 
-    public Transform lookTarget;
+    public Transform[] lookTargets;
     public Transform[] cameraPath;
+    public Transform lookTarget;
+    public float duration;
 
     public RoamDelegate roamStart;
     public RoamDelegate roamComplete;
 
     private int curIndex;
     private bool animating;
+    private float percentage;
 
     #region MonoBehaviour
     void Awake () {
@@ -20,7 +23,8 @@ public class CameraRoamController : MonoBehaviour {
 
     void Update () {
         if (!animating) {
-            transform.LookAt(lookTarget);
+            iTween.PutOnPath(gameObject, cameraPath, percentage);
+            transform.LookAt(iTween.PointOnPath(lookTargets, percentage));
         }
     }
 
@@ -67,17 +71,27 @@ public class CameraRoamController : MonoBehaviour {
 
     public void Roam () {
         iTween.Stop(gameObject);
-        iTween.MoveFrom(gameObject, iTween.Hash("position", cameraPath[0],
+        /*iTween.MoveFrom(gameObject, iTween.Hash("position", cameraPath[0],
                                                 "path", cameraPath,
                                                 "time", 10.0f,
                                                 "looktarget", lookTarget,
                                                 "onstart", "RoamStart",
-                                                "oncomplete", "RoamComplete"));
+                                                "oncomplete", "RoamComplete"));*/
+        iTween.ValueTo(gameObject, iTween.Hash("from", 0,
+                                               "to", 1,
+                                               "time", duration,
+                                               "easetype",iTween.EaseType.linear,
+                                               "onupdate", "UpdatePercentage"));
     }
 
     #endregion
 
     #region private
+    private void UpdatePercentage (float p) {
+        percentage = p;
+    }
+
+
     private void MoveTo (int index){
         Debug.Log("SlideTo " + index + " current " + curIndex);
         iTween.Stop(gameObject);

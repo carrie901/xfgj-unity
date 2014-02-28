@@ -19,14 +19,31 @@ public class CameraSwitcher : MonoBehaviour {
     #endregion
 
     #region static
-    public static void SwitchToMain() {
-        cs.roamCamera.SetActive(false);
-        cs.mainCamera.SetActive(true);
+    public static void SwitchToMain () {
+        if (cs.roamCamera != null) {
+            cs.roamCamera.SetActive(false);
+        }
+        if (cs.mainCamera != null) {
+            cs.mainCamera.SetActive(true);
+        }
     }
 
-    public static void SwitchToRoam() {
-        cs.mainCamera.SetActive(false);
-        cs.mainCamera.SetActive(true);
+    public static void SwitchToRoam () {
+        if (cs.mainCamera != null) {
+            cs.mainCamera.SetActive(false);
+        }
+        if (cs.roamCamera != null) {
+            cs.roamCamera.SetActive(true);
+        }
+    }
+
+    public static void SwitchToFirstPerson () {
+        if (cs.mainCamera != null) {
+            cs.mainCamera.SetActive(false);
+        }
+        if (cs.roamCamera != null) {
+            cs.roamCamera.SetActive(false);
+        }
     }
     #endregion
 }

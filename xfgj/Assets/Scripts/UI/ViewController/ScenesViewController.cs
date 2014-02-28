@@ -24,21 +24,21 @@ public class ScenesViewController : MonoBehaviour {
     #region MonoBehaviour
     void Awake () {
         scrollComp = scrollPanel.GetComponent<UIScrollView>();
-        scrollComp.onDragFinished = DragFinished;
         scrollPanelComp = scrollPanel.GetComponent<UIPanel>();
         tableComp = table.GetComponent<UITable>();
-        tableComp.onReposition = OnReposition;
         itemViewList = new List<SceneItemView>();
         sceneIdList = new List<int>();
     }
 
     void Start () {
-        SyncScenesCommand scenesCmd = new SyncScenesCommand();
+        /*SyncScenesCommand scenesCmd = new SyncScenesCommand();
         scenesCmd.Callback = AfterSyncScenes;
-        scenesCmd.execute();
+        scenesCmd.execute();*/
     }
 
     void OnEnable () {
+        scrollComp.onDragFinished = DragFinished;
+        tableComp.onReposition = OnReposition;
         LoadViewController.ShowLoadIndicator();
         ClearView();
         GenerateView();
@@ -48,20 +48,22 @@ public class ScenesViewController : MonoBehaviour {
     void OnDisable () {
         sceneIdList.Clear();
         ClearView();
+        scrollComp.onDragFinished = null;
+        tableComp.onReposition = null;
     }
     #endregion
 
     #region private methods
     private void GenerateView () {
         Debug.Log("GenerateView");
-        sceneIdList.Clear();
+        //sceneIdList.Clear();
         List<Scene> scenes = dataSource(itemViewList.Count, ITEM_COUNT);
         for (int i = 0; i < scenes.Count; ++i) {
             SceneItemView itemView = SceneItemView.Create(table, scenes[i]);
             UIEventListener.Get(itemView.gameObject).onClick = ItemClick;
             itemViewList.Add(itemView);
 
-            Picture picture = LogicController.GetPicture(scenes[i].pictureId);
+            /*Picture picture = LogicController.GetPicture(scenes[i].pictureId);
             if (picture == null) {
                 sceneIdList.Add(scenes[i].sceneId);
             }
@@ -70,15 +72,15 @@ public class ScenesViewController : MonoBehaviour {
                 if (asset == null) {
                     sceneIdList.Add(scenes[i].sceneId);
                 }
-            }
+            }*/
         }
         tableComp.Reposition();
-        if (sceneIdList.Count != 0) {
+        /*if (sceneIdList.Count != 0) {
             GetSceneSnapshotCommand cmd = new GetSceneSnapshotCommand();
             cmd.SceneIds = sceneIdList;
             cmd.Callback = AfterGetSnapshot;
             cmd.execute();
-        }
+        }*/
     }
 
     private void ClearView () {
@@ -107,19 +109,19 @@ public class ScenesViewController : MonoBehaviour {
     }
 
     private void ItemClick (GameObject go) {
-        Debug.Log("item click now");
         RootViewController.ShowSceneView(Int32.Parse(go.name.Substring(SceneItemView.GO_PREFIX.Length)));
     }
 
     private void OnReposition () {
+        float yOffset = scrollPanel.transform.localPosition.y;
         for (int i = 0; i < table.transform.childCount; ++i) {
             Transform t = table.transform.GetChild(i);
             int row = i / 2;
             if (i % 2 != 0) {
-                t.localPosition = new Vector3(182, -row * 364, 0);
+                t.localPosition = new Vector3(182, -row * 364 - yOffset, 0);
             }
             else {
-                t.localPosition = new Vector3(-182, -row * 364, 0);
+                t.localPosition = new Vector3(-182, -row * 364 - yOffset, 0);
             }
         }
     }

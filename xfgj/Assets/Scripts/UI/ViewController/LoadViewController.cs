@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
+public delegate void AfterShowProgressView ();
 public delegate void AfterHideProgressView ();
 
 public class LoadViewController : MonoBehaviour {
@@ -27,7 +28,6 @@ public class LoadViewController : MonoBehaviour {
         progressPanel = progressView.GetComponent<UIPanel>();
         progressSlider = progressView.transform.Find("Progress Bar").gameObject.GetComponent<UISlider>();
         tipLabel = progressView.transform.Find("Tip").gameObject.GetComponent<UILabel>();
-
         tips = new string[3];
         for (int i = 1; i <= tips.Length; ++i) {
             tips[i - 1] = "Tip_" + i;
@@ -48,8 +48,8 @@ public class LoadViewController : MonoBehaviour {
         lvc.StartCoroutine(lvc.HideIndicatorView());
     }
 
-    public static void ShowLoadProgress () {
-        lvc.ShowProgressView();
+    public static void ShowLoadProgress (AfterShowProgressView callback) {
+        lvc.StartCoroutine(lvc.ShowProgressView(callback));
     }
 
     public static void HideLoadProgress (AfterHideProgressView callback) {
@@ -73,10 +73,14 @@ public class LoadViewController : MonoBehaviour {
         indicatorView.SetActive(false);
     }
 
-    private void ShowProgressView () {
+    private IEnumerator ShowProgressView (AfterShowProgressView callback) {
         progressView.SetActive(true);
         progressPanel.depth = SHOW_DEPTH;
         tipLabel.text = Localization.Localize(tips[Random.Range(0, tips.Length)]);
+        yield return new WaitForSeconds(0.5f);
+        if (callback != null) {
+            callback();
+        }
     }
 
     private IEnumerator HideProgressView (AfterHideProgressView callback) {

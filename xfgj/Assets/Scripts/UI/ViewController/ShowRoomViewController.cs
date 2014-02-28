@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class ShowRoomViewController : MonoBehaviour {
 
-    public GameObject root;
+    public GameObject scrollPanel;
     public GameObject table;
 
     private UITable tableComp;
@@ -19,7 +19,6 @@ public class ShowRoomViewController : MonoBehaviour {
     #region MonoBehaviour
     void Awake () {
         tableComp = table.GetComponent<UITable>();
-        tableComp.onReposition = OnReposition;
         scenesViewController = gameObject.GetComponent<ScenesViewController>();
         scenesViewController.dataSource = DataSource;
         itemViewList = new List<SceneTypeItemView>();
@@ -35,6 +34,7 @@ public class ShowRoomViewController : MonoBehaviour {
     }
 
     void OnEnable () {
+        tableComp.onReposition = OnReposition;
         LoadViewController.ShowLoadIndicator();
         GenerateView();
         LoadViewController.HideLoadIndicator();
@@ -57,7 +57,7 @@ public class ShowRoomViewController : MonoBehaviour {
             UIEventListener.Get(itemView.gameObject).onClick = ItemClick;
             itemViewList.Add(itemView);
 
-            Picture picture = LogicController.GetPicture(sceneTypes[i].pictureId);
+            /*Picture picture = LogicController.GetPicture(sceneTypes[i].pictureId);
             if (picture == null) {
                 picIdList.Add(sceneTypes[i].pictureId);
             }
@@ -66,9 +66,10 @@ public class ShowRoomViewController : MonoBehaviour {
                 if (asset == null) {
                     assetIdList.Add(picture.assetId);
                 }
-            }
+            }*/
         }
         tableComp.Reposition();
+        /*
         if (picIdList.Count != 0) {
             GetPictureCommand cmd = new GetPictureCommand();
             cmd.Callback = AfterGetPicture;
@@ -83,6 +84,7 @@ public class ShowRoomViewController : MonoBehaviour {
         }
         picIdList.Clear();
         assetIdList.Clear();
+        */
     }
 
     private void ClearView () {
@@ -109,20 +111,22 @@ public class ShowRoomViewController : MonoBehaviour {
     }
 
     private void OnReposition () {
+        float yOffset = scrollPanel.transform.localPosition.y;
         for (int i = 0; i < table.transform.childCount; ++i) {
             Transform t = table.transform.GetChild(i);
             int row = i / 2;
             if (i % 2 != 0) {
-                t.localPosition = new Vector3(182, -row * 364, 0);
+                t.localPosition = new Vector3(182, -row * 364 - yOffset, 0);
             }
             else {
-                t.localPosition = new Vector3(-182, -row * 364, 0);
+                t.localPosition = new Vector3(-182, -row * 364 - yOffset, 0);
             }
         }
     }
 
     private List<Scene> DataSource (int index, int count) {
-        return LogicController.GetScenesBySceneType(selectedTypeId, index, count);
+        //return LogicController.GetScenesBySceneType(selectedTypeId, index, count);
+        return LogicController.GetScenesBySceneType(100001, index, count);
     }
 
     private void AfterAuthorize (object obj) {

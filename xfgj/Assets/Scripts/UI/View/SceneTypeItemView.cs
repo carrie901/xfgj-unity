@@ -73,7 +73,7 @@ public class SceneTypeItemView {
     }
 
     public void ShowPicture () {
-        if (IsPictureShowed()) {
+        /*if (IsPictureShowed()) {
             return;
         }
         Debug.Log("ShowPicture call");
@@ -83,6 +83,28 @@ public class SceneTypeItemView {
         if (asset == null) { return; }
         AssetBundleManager.GetObject(AppSetting.getInstance().assetUrl + asset.name, asset.version,
                                      new string[]{picture.atlasName}, LoadCallback);
+                                     */
+        GameObject thumbnail = GameObject.Find("ThumbnailAtlasRef");
+        UIAtlas atlas = thumbnail.GetComponent<UIAtlas>();
+        pic.atlas = atlas;
+        if (name.text.Equals(Localization.Localize("chufang"))) {
+            pic.spriteName = "chufang";
+        }
+        else if (name.text.Equals(Localization.Localize("weishengjian"))) {
+            pic.spriteName = "weishengjian";
+        }
+        else if (name.text.Equals(Localization.Localize("keting"))) {
+            pic.spriteName = "keting";
+        }
+        else if (name.text.Equals(Localization.Localize("ertongfang"))) {
+            pic.spriteName = "ertongfang";
+        }
+        else if (name.text.Equals(Localization.Localize("shufang"))) {
+            pic.spriteName = "shufang";
+        }
+        else if (name.text.Equals(Localization.Localize("woshi"))) {
+            pic.spriteName = "woshi";
+        }
     }
 
     private void LoadCallback (UnityEngine.Object[] objs) {

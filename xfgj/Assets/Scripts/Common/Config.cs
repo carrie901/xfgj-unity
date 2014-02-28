@@ -29,6 +29,7 @@ public class Config {
     public const string TAG_MAIN_CAMERA = "MainCamera";
     public const string TAG_ROAM_CAMERA = "RoamCamera";
     public const string TAG_GESTURE = "Gesture";
+    public const string TAG_CHARACTER = "Character";
     #endregion
 
 

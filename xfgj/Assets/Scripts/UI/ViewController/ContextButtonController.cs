@@ -5,35 +5,52 @@ public delegate void ContextButtonClick();
 
 public class ContextButtonController : MonoBehaviour {
     public static readonly int FLAG_PRODUCT = 1;
+    public static readonly int FLAG_LIGHT = 2;
     public static readonly int OFFSET_Y = 200;
 
     public GameObject productButton;
+    public GameObject lightButton;
     public ContextButtonClick productDelegate;
+    public ContextButtonClick lightDelegate;
 
     #region MonoBehaviour
     void Start () {
         UIEventListener.Get(productButton).onClick = ProductButtonClick;
+        UIEventListener.Get(lightButton).onClick = LightButtonClick;
     }
     #endregion
 
     #region public
     public void ShowContextButton(int flag) {
-        if (flag == FLAG_PRODUCT) {
-            ButtonLayout(productButton);
-            ButtonAppear(productButton);
+        GameObject[] buttonGroup = GetButtonGroup(flag);
+        if (buttonGroup != null) {
+            ButtonLayout(buttonGroup);
+            ButtonAppear(buttonGroup);
         }
     }
 
     public void HideContextButton() {
-        if (productButton.activeSelf) {
-            if (productButton.transform.parent.localPosition.y == 0) {
-                ButtonDisappear(productButton);
+        Debug.Log("HideContextButton");
+        GameObject[] buttons = new GameObject[] {productButton, lightButton};
+        foreach (GameObject go in buttons) {
+            if (go.activeSelf) {
+                ButtonDisappear(go);
             }
         }
     }
     #endregion
 
     #region private
+    private GameObject[] GetButtonGroup (int flag) {
+        if (flag == FLAG_PRODUCT) {
+            return new GameObject[] {productButton};
+        }
+        else if (flag == FLAG_LIGHT) {
+            return new GameObject[] {productButton, lightButton};
+        }
+        return null;
+    }
+
     private void ButtonLayout (params GameObject[] buttons) {
         if (buttons == null) {
             return;
@@ -63,20 +80,15 @@ public class ContextButtonController : MonoBehaviour {
         }
     }
 
-    private void ButtonAppear (params GameObject[] buttons) {
+    private void ButtonAppear (GameObject[] buttons) {
         if (buttons == null) {
             return;
         }
         Debug.Log("ContextButton Appear");
-        float delay = 0f;
         foreach (GameObject go in buttons) {
-            Vector3 pos = go.transform.parent.localPosition;
-            TweenPosition tp = UITweener.Begin<TweenPosition>(go.transform.parent.gameObject, 1.0f);
-            tp.from = new Vector3(pos.x, pos.y - OFFSET_Y, pos.z);
-            tp.to = new Vector3(pos.x, pos.y, pos.z);
-            tp.delay = delay;
-            tp.PlayForward();
-            delay += 0.3f;
+            if (go.animation != null) {
+                go.animation.Play();
+            }
         }
     }
 
@@ -85,16 +97,10 @@ public class ContextButtonController : MonoBehaviour {
             return;
         }
         Debug.Log("ContextButton Disappear");
-        float delay = 0f;
         foreach (GameObject go in buttons) {
-            Vector3 pos = go.transform.parent.localPosition;
-            TweenPosition tp = UITweener.Begin<TweenPosition>(go.transform.parent.gameObject, 1.0f);
-            tp.from = new Vector3(pos.x, pos.y, pos.z);
-            tp.to = new Vector3(pos.x, pos.y - OFFSET_Y, pos.z);
-            tp.delay = delay;
-            EventDelegate.Add(tp.onFinished, delegate() {go.SetActive(false);});
-            tp.PlayForward();
-            delay += 0.3f;
+            if (go.animation != null) {
+                go.animation.Play("ContextButtonDisappear");
+            }
         }
     }
 
@@ -102,7 +108,14 @@ public class ContextButtonController : MonoBehaviour {
         if (productDelegate != null) {
             productDelegate();
         }
-        ButtonDisappear(productButton);
+        HideContextButton();
+    }
+
+    private void LightButtonClick (GameObject go) {
+        if (lightDelegate != null) {
+            lightDelegate();
+        }
+        HideContextButton();
     }
     #endregion
 }

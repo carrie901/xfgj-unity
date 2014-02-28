@@ -69,7 +69,7 @@ public class SceneItemView {
     }
 
     public void ShowPicture () {
-        if (IsPictureShowed()) {
+        /*if (IsPictureShowed()) {
             return;
         }
         Debug.Log("ShowPicture call");
@@ -79,6 +79,11 @@ public class SceneItemView {
         if (asset == null) { return; }
         AssetBundleManager.GetObject(AppSetting.getInstance().assetUrl + asset.name, asset.version,
                                      new string[]{picture.atlasName}, LoadCallback);
+                                     */
+        GameObject thumbnailAtlas = GameObject.Find("ThumbnailAtlasRef");
+        UIAtlas atlas = thumbnailAtlas.GetComponent<UIAtlas>();
+        thumbnail.atlas = atlas;
+        thumbnail.spriteName = "scene1";
     }
     #endregion
 

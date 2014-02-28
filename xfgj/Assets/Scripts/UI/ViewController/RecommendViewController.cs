@@ -1,5 +1,6 @@
 using UnityEngine;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using LitJson;
 
@@ -17,7 +18,6 @@ public class RecommendViewController : MonoBehaviour {
     #region MonoBehaviour
     void Awake () {
         tableComp = table.GetComponent<UITable>();
-        tableComp.onReposition = OnReposition;
         itemViewList = new List<RecommendItemView>();
         picIdList = new List<string>();
         assetIdList = new List<int>();
@@ -33,6 +33,7 @@ public class RecommendViewController : MonoBehaviour {
     }
 
     void OnEnable () {
+        tableComp.onReposition = OnReposition;
         LoadViewController.ShowLoadIndicator();
         ClearView();
         GenerateView();
@@ -46,23 +47,27 @@ public class RecommendViewController : MonoBehaviour {
 
     #region private methods
     public List<Recommend> GetTestData () {
-        List<Recommend> list = new List<Recommend>();
-        for (int i = 0; i < 9; i++) {
-            System.Text.StringBuilder sb = new System.Text.StringBuilder();
-            JsonWriter jw = new JsonWriter(sb);
-            jw.WriteObjectStart();
-            jw.WritePropertyName(Param.X);
-            jw.Write((i + 1) % 2 != 0 ? -190 : 190);
-            jw.WritePropertyName(Param.Y);
-            jw.Write(350 * (-i / 2));
-            jw.WritePropertyName(Param.WIDTH);
-            jw.Write(350);
-            jw.WritePropertyName(Param.HEIGHT);
-            jw.Write(300);
-            jw.WriteObjectEnd();
-            list.Add(new Recommend(i, "abc", "", DateTime.Now, DateTime.Now, sb.ToString()));
-        }
-        return list;
+        /*List<Recommend> list = new List<Recommend>();
+        System.Text.StringBuilder sb = new System.Text.StringBuilder();
+        JsonWriter jw = new JsonWriter(sb);
+        jw.WriteObjectStart();
+        jw.WritePropertyName(Param.X);
+        jw.Write(0);
+        jw.WritePropertyName(Param.Y);
+        jw.Write(46);
+        jw.WritePropertyName(Param.WIDTH);
+        jw.Write(560);
+        jw.WritePropertyName(Param.HEIGHT);
+        jw.Write(250);
+        jw.WriteObjectEnd();
+        list.Add(new Recommend(i, "abc", "", DateTime.Now, DateTime.Now, sb.ToString()));
+        return list;*/
+        return null;
+    }
+
+    private IEnumerator TestGenerateView () {
+        yield return new WaitForSeconds(2f);
+        LoadViewController.HideLoadIndicator();
     }
 
     private void GenerateView () {
